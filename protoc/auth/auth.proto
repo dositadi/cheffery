@@ -1,0 +1,26 @@
+// The syntax declaration must be the first in the proto file
+syntax = "proto3";
+
+// The package name helps avoid naming conflicts between proto definitions.
+package auth;
+
+// go_package specifies where the generated Go code should live.
+// The path is the Go import path of the generated package
+option go_package = "protoc/auth;github.com/dositadi/cheffery/protoc/gen/auth";
+
+import "google/protobuf/timestamp.proto";
+
+// GenearateTokenPair generates and returns the token pair for the user to use.
+// Each field has a unique number that identifies it in the binary encoding.
+// These numbers should never change once your proto is in use.
+message GenerateTokenPair {
+    string userId = 1;
+}
+
+message GenerateTokenPairResponse {
+    string accessToken =1;
+    string refreshToken = 2;
+    google.protobuf.Timestamp expiresAt = 3;
+}
+
+message 
