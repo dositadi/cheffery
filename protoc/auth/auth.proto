@@ -1,0 +1,53 @@
+// The syntax declaration must be the first in the proto file
+syntax = "proto3";
+
+// The package name helps avoid naming conflicts between proto definitions.
+package auth;
+
+// go_package specifies where the generated Go code should live.
+// The path is the Go import path of the generated package
+option go_package = "github.com/dositadi/cheffery/gen";
+
+import "google/protobuf/timestamp.proto";
+
+// GenearateTokenPair generates and returns the token pair for the user to use.
+// Each field has a unique number that identifies it in the binary encoding.
+// These numbers should never change once your proto is in use.
+message GenerateTokenPairRequest {
+    string userId = 1;
+}
+
+// GenerateTokenPairResponse is the response gotten from the auth service upon a generate token pair request
+message GenerateTokenPairResponse {
+    string accessToken =1;
+    string refreshToken = 2;
+    google.protobuf.Timestamp expiresAt = 3;
+}
+
+// ValidateAccessTokenRequest validates the token the user presents to access a resource
+message ValidateAccessTokenRequest {
+    string accessToken = 1;
+}
+
+// ValidateAccessTokenResponse is the response of the ValidateAccessTokenRequest
+message ValidateAccessTokenResponse {
+    bool isValid = 1;
+}
+
+// RotateRefreshTokenRequest refreshes a users refresh token upon expiration or upon access token expiration
+message RotateRefreshTokenRequest {
+    string refreshToken = 1;
+}
+
+// RotateRefreshTokenResponse is the response of the RotateRefreshTokenRequest
+message RotateRefreshTokenResponse {
+    string accessToken =1;
+    string refreshToken = 2;
+    google.protobuf.Timestamp expiresAt = 3;
+}
+
+// Issuer service is in charge of handling all the various request
+service Issuer {
+    rpc GenerateTokenPair(GenerateTokenPairRequest) returns (GenerateTokenPairResponse);
+    rpc ValidateAccessToken (ValidateAccessTokenRequest) returns (ValidateAccessTokenResponse);
+}
