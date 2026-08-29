@@ -7,9 +7,9 @@ import (
 )
 
 // @Description This is the auth service config file,
-// @Description It loads all the configurations this service will need to commence running
+// @Description It loads all the configurations the auth service needs to start running
 type Config struct {
-	RedisConfig *RedisConfig
+	RedisConfig *RedisConfig // Redis config
 }
 
 func LoadConfig() *Config {
