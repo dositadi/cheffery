@@ -1,8 +1,10 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
+
+	"github.com/dositadi/cheffery/services/shared/logger"
 )
 
 type RedisConfig struct {
@@ -13,7 +15,7 @@ type RedisConfig struct {
 	Port     int
 }
 
-func loadRedisConfig() *RedisConfig {
+func loadRedisConfig(logger logger.Logger) *RedisConfig {
 	cfg := &RedisConfig{
 		Protocol: getStringEnvOrDefault(string(rEDIS_PROTOCOL), "redis"),
 		Username: getStringEnvOrDefault(string(rEDIS_USERNAME), "default"),
@@ -23,8 +25,10 @@ func loadRedisConfig() *RedisConfig {
 
 	cfg.Password = os.Getenv(string(rEDIS_PASSWORD))
 	if cfg.Password == "" {
-		// implement logger
-		log.Fatalf("%s environment variable is required", rEDIS_PASSWORD)
+		logger.PrintFatal(nil, fmt.Sprintf("%s environment variable is required", rEDIS_PASSWORD), map[string]string{
+			"Context": "config.loadRedisConfig()",
+		})
+		return nil
 	}
 
 	return cfg

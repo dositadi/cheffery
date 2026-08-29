@@ -4,6 +4,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/dositadi/cheffery/services/shared/logger"
 )
 
 // @Description This is the auth service config file,
@@ -12,9 +14,14 @@ type Config struct {
 	RedisConfig *RedisConfig // Redis config
 }
 
-func LoadConfig() *Config {
+func New(logger logger.Logger) *Config {
+	return loadConfig(logger)
+}
+
+// @Description
+func loadConfig(logger logger.Logger) *Config {
 	cfg := &Config{
-		RedisConfig: loadRedisConfig(),
+		RedisConfig: loadRedisConfig(logger),
 	}
 	return cfg
 }
