@@ -11,7 +11,7 @@ import (
 )
 
 type Logger struct {
-	zerolog.Logger
+	logger zerolog.Logger
 }
 
 func New(w io.Writer) Logger {
@@ -19,7 +19,7 @@ func New(w io.Writer) Logger {
 	multi := zerolog.MultiLevelWriter(consoleWriter, os.Stdout)
 	logger := zerolog.New(multi).With().Timestamp().Logger()
 
-	return Logger{Logger: logger}
+	return Logger{logger: logger}
 }
 
 func (l Logger) PrintInfo(message string, properties map[string]string) {
@@ -28,7 +28,7 @@ func (l Logger) PrintInfo(message string, properties map[string]string) {
 		log.Printf("Info: %v %s %+v", time.Now(), message, properties)
 		return
 	}
-	l.Logger.Info().RawJSON("properties", json).Msg(message)
+	l.logger.Info().RawJSON("properties", json).Msg(message)
 }
 
 func (l Logger) PrintError(err error, message string, properties map[string]string) {
@@ -37,7 +37,7 @@ func (l Logger) PrintError(err error, message string, properties map[string]stri
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
 		return
 	}
-	logger := l.Logger.With().Stack().Logger()
+	logger := l.logger.With().Stack().Logger()
 
 	logger.Error().Err(err).RawJSON("properties", json).Msg(message)
 }
@@ -48,7 +48,7 @@ func (l Logger) PrintFatal(err error, message string, properties map[string]stri
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
 		return
 	}
-	logger := l.Logger.With().Stack().Logger()
+	logger := l.logger.With().Stack().Logger()
 
 	logger.Fatal().Err(err).RawJSON("properties", json).Msg(message)
 }
@@ -59,7 +59,7 @@ func (l Logger) PrintWarn(err error, message string, properties map[string]strin
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
 		return
 	}
-	logger := l.Logger.With().Stack().Logger()
+	logger := l.logger.With().Stack().Logger()
 
 	logger.Warn().Err(err).RawJSON("properties", json).Msg(message)
 }
@@ -70,7 +70,7 @@ func (l Logger) PrintPanic(err error, message string, properties map[string]stri
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
 		return
 	}
-	logger := l.Logger.With().Stack().Logger()
+	logger := l.logger.With().Stack().Logger()
 
 	logger.Panic().Err(err).RawJSON("properties", json).Msg(message)
 }
