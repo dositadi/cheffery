@@ -29,8 +29,8 @@ func loadRedisConfig(logger logger.Logger) *RedisConfig {
 		Username:       getStringEnvOrDefault(string(rEDIS_USERNAME), "default"),
 		Host:           getStringEnvOrDefault(string(rEDIS_HOST), "machine-adequate-crayon-70404.db.redis.io"),
 		Port:           getIntEnvOrDefault(string(rEDIS_PORT), 18608),
-		MaxActiveConns: getIntEnvOrDefault(rEDIS_MAX_ACTIVE_CONN, 30),
-		MaxIdleConns:   getIntEnvOrDefault(rEDIS_MAX_IDLE_CONN, 10),
+		MaxActiveConns: getIntEnvOrDefault(string(rEDIS_MAX_ACTIVE_CONN), 30),
+		MaxIdleConns:   getIntEnvOrDefault(string(rEDIS_MAX_IDLE_CONN), 10),
 	}
 
 	cfg.Password = os.Getenv(string(rEDIS_PASSWORD))
@@ -38,7 +38,6 @@ func loadRedisConfig(logger logger.Logger) *RedisConfig {
 		logger.PrintFatal(nil, "redis-config-loader", fmt.Sprintf("%s environment variable is required", rEDIS_PASSWORD), map[string]string{
 			"Context": "config.loadRedisConfig()",
 		})
-		return nil
 	}
 
 	return cfg
