@@ -14,7 +14,7 @@ type ExecuteGenerateAccessTokenInput struct {
 	Name   string
 }
 
-func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, arg ExecuteGenerateAccessTokenInput) string {
+func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, arg ExecuteGenerateAccessTokenInput) string {
 	tokenId := uuid.NewString()
 
 	claim := jwtdomain.JWTClaim{
@@ -33,7 +33,7 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, arg ExecuteGen
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString(u.cfg.AccessKey)
 	if err != nil {
-		
+		u.logger.PrintError(err,reqId,)
 	}
 
 }
