@@ -19,12 +19,12 @@ func NewTokenStore(logger logger.Logger, client *redis.Client) *TokenStore {
 	}
 }
 
-func tokenKey(tokenId string) string {
-	return fmt.Sprintf("token:%s", tokenId)
+func refreshTokenKey(tokenId string) string {
+	return fmt.Sprintf("refresh_token:%s", tokenId)
 }
 
-func userKey(userId string) string {
-	return fmt.Sprintf("userToken:%s", userId)
+func userTokensSetKey(userId string) string {
+	return fmt.Sprintf("user_token_set:%s", userId)
 }
 
 func tokenVersionKey(userId string) string {

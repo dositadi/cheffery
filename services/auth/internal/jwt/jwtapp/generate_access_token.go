@@ -31,7 +31,7 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, 
 		return "", err
 	}
 
-	claim := jwtdomain.JWTClaim{
+	claim := jwtdomain.JWTAccessClaim{
 		UserID:       arg.UserID,
 		UserName:     arg.Name,
 		TokenVersion: version,

@@ -2,9 +2,15 @@ package jwtdomain
 
 import "github.com/golang-jwt/jwt/v5"
 
-type JWTClaim struct {
+type JWTAccessClaim struct {
 	UserID       string
 	UserName     string
+	TokenVersion int64
+	jwt.RegisteredClaims
+}
+
+type JWTRefreshClaim struct {
+	UserID       string
 	TokenVersion int64
 	jwt.RegisteredClaims
 }
