@@ -43,12 +43,7 @@ func (t *TokenStore) GetTokenVersion(ctx context.Context, reqID, userID string) 
 
 func (t *TokenStore) StoreRefreshToken(ctx context.Context, reqID, tokenId, userId string, expiresAt time.Time) error {
 	scope := "store.StoreRefreshToken()"
-	data := struct {
-		UserId    string
-		TokenId   string
-		ExpiresAt time.Time
-		Revoked   bool
-	}{
+	data := TokenData{
 		UserId:    userId,
 		TokenId:   tokenId,
 		ExpiresAt: expiresAt,
@@ -94,4 +89,35 @@ func (t *TokenStore) StoreRefreshToken(ctx context.Context, reqID, tokenId, user
 	}
 
 	return nil
+}
+
+func (t *TokenStore) GetRefreshToken(ctx context.Context, reqId, tokenId string) (TokenData, error) {
+	scope := "store.GetRefreshToken()"
+
+	data, err := t.client.Get(ctx, refreshTokenKey(tokenId)).Bytes()
+	if err != nil {
+		t.logger.PrintError(err, reqId, customerror.InternalError{
+			Inner:   err,
+			Message: err.Error(),
+			Misc:    nil,
+		}.Error(), map[string]string{
+			"Context": scope,
+		})
+		return TokenData{}, err
+	}
+
+	var out TokenData
+
+	if err := json.Unmarshal(data, &out); err != nil {
+		t.logger.PrintError(err, reqId, customerror.InternalError{
+			Inner:   err,
+			Message: err.Error(),
+			Misc:    nil,
+		}.Error(), map[string]string{
+			"Context": scope,
+		})
+		return TokenData{}, err
+	}
+
+	return out, nil
 }

@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/dositadi/cheffery/services/shared/logger"
 	"github.com/redis/go-redis/v9"
@@ -17,6 +18,13 @@ func NewTokenStore(logger logger.Logger, client *redis.Client) *TokenStore {
 		logger: logger,
 		client: client,
 	}
+}
+
+type TokenData struct {
+	UserId    string
+	TokenId   string
+	ExpiresAt time.Time
+	Revoked   bool
 }
 
 func refreshTokenKey(tokenId string) string {
