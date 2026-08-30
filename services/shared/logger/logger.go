@@ -22,16 +22,16 @@ func New(w io.Writer) Logger {
 	return Logger{logger: logger}
 }
 
-func (l Logger) PrintInfo(message string, properties map[string]string) {
+func (l Logger) PrintInfo(reqId, message string, properties map[string]string) {
 	json, err := json.Marshal(properties)
 	if err != nil {
 		log.Printf("Info: %v %s %+v", time.Now(), message, properties)
 		return
 	}
-	l.logger.Info().RawJSON("properties", json).Msg(message)
+	l.logger.Info().Str("requestID",reqId).RawJSON("properties", json).Msg(message)
 }
 
-func (l Logger) PrintError(err error, message string, properties map[string]string) {
+func (l Logger) PrintError(err error, reqId, message string, properties map[string]string) {
 	json, err := json.Marshal(properties)
 	if err != nil {
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
@@ -39,10 +39,10 @@ func (l Logger) PrintError(err error, message string, properties map[string]stri
 	}
 	logger := l.logger.With().Stack().Logger()
 
-	logger.Error().Err(err).RawJSON("properties", json).Msg(message)
+	logger.Error().Err(err).Str("requestID",reqId).RawJSON("properties", json).Msg(message)
 }
 
-func (l Logger) PrintFatal(err error, message string, properties map[string]string) {
+func (l Logger) PrintFatal(err error, reqId, message string, properties map[string]string) {
 	json, err := json.Marshal(properties)
 	if err != nil {
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
@@ -50,10 +50,10 @@ func (l Logger) PrintFatal(err error, message string, properties map[string]stri
 	}
 	logger := l.logger.With().Stack().Logger()
 
-	logger.Fatal().Err(err).RawJSON("properties", json).Msg(message)
+	logger.Fatal().Err(err).Str("requestID",reqId).RawJSON("properties", json).Msg(message)
 }
 
-func (l Logger) PrintWarn(err error, message string, properties map[string]string) {
+func (l Logger) PrintWarn(err error, reqId, message string, properties map[string]string) {
 	json, err := json.Marshal(properties)
 	if err != nil {
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
@@ -61,10 +61,10 @@ func (l Logger) PrintWarn(err error, message string, properties map[string]strin
 	}
 	logger := l.logger.With().Stack().Logger()
 
-	logger.Warn().Err(err).RawJSON("properties", json).Msg(message)
+	logger.Warn().Err(err).Str("requestID",reqId).RawJSON("properties", json).Msg(message)
 }
 
-func (l Logger) PrintPanic(err error, message string, properties map[string]string) {
+func (l Logger) PrintPanic(err error, reqId, message string, properties map[string]string) {
 	json, err := json.Marshal(properties)
 	if err != nil {
 		log.Printf("Info: %v %s %s %+v", time.Now(), err.Error(), message, properties)
@@ -72,5 +72,5 @@ func (l Logger) PrintPanic(err error, message string, properties map[string]stri
 	}
 	logger := l.logger.With().Stack().Logger()
 
-	logger.Panic().Err(err).RawJSON("properties", json).Msg(message)
+	logger.Panic().Err(err).Str("requestID",reqId).RawJSON("properties", json).Msg(message)
 }
