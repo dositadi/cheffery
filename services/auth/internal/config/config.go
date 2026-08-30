@@ -12,6 +12,7 @@ import (
 // @Description It loads all the configurations the auth service needs to start running
 type Config struct {
 	RedisConfig *RedisConfig // Redis config
+	JWTConfig   *JWTConfig   // Jwt config
 }
 
 // @Summary new cofig type
@@ -81,6 +82,6 @@ var (
 	rEDIS_PASSWORD        configKey = "REDIS_PASSWORD"
 	rEDIS_HOST            configKey = "REDIS_HOST"
 	rEDIS_PORT            configKey = "REDIS_PORT"
-	rEDIS_MAX_ACTIVE_CONN           = "REDIS_MAX_ACTIVE_CONN"
-	rEDIS_MAX_IDLE_CONN             = "REDIS_MAX_IDLE_CONN"
+	rEDIS_MAX_ACTIVE_CONN configKey = "REDIS_MAX_ACTIVE_CONN"
+	rEDIS_MAX_IDLE_CONN   configKey = "REDIS_MAX_IDLE_CONN"
 )
