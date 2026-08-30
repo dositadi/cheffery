@@ -26,3 +26,7 @@ func tokenKey(tokenId string) string {
 func userKey(userId string) string {
 	return fmt.Sprintf("userToken:%s", userId)
 }
+
+func tokenVersionKey(userId string) string {
+	return fmt.Sprintf("token_version:%s", userId)
+}
