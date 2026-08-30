@@ -6,12 +6,12 @@ COPY . . /auth/
 
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/app ./cmd/
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin ./cmd/
 
 FROM alpine3.23
 
 WORKDIR /app
 
-COPY --from=builder /bin/app /app/bin
+COPY --from=builder /bin ./bin
 
-ENTRYPOINT [ "./app/bin" ]
+ENTRYPOINT [ "./bin" ]
