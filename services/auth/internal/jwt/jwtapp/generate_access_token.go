@@ -46,7 +46,7 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, 
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString(u.cfg.AccessKey)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString([]byte(u.cfg.AccessKey))
 	if err != nil {
 		u.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,
