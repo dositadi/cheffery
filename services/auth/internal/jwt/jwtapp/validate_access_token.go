@@ -6,12 +6,10 @@ import (
 
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func (u *Usecase) ExecuteValidateAccessToken(ctx context.Context, tokenString string) (*jwtdomain.JWTAccessClaim, error) {
-	reqId := middleware.GetReqID(ctx)
+func (u *Usecase) ExecuteValidateAccessToken(ctx context.Context, reqId, tokenString string) (*jwtdomain.JWTAccessClaim, error) {
 	scope := "jwtapp.ExecuteValidateAccessToken"
 
 	token, err := jwt.ParseWithClaims(tokenString, jwtdomain.JWTAccessClaim{}, func(t *jwt.Token) (any, error) {

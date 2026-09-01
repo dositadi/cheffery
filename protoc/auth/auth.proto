@@ -14,7 +14,8 @@ import "google/protobuf/timestamp.proto";
 // Each field has a unique number that identifies it in the binary encoding.
 // These numbers should never change once your proto is in use.
 message GenerateTokenPairRequest {
-    string userId = 1;
+    string userID = 1;
+    string requestID =2;
 }
 
 // GenerateTokenPairResponse is the response gotten from the auth service upon a generate token pair request
@@ -27,16 +28,28 @@ message GenerateTokenPairResponse {
 // ValidateAccessTokenRequest validates the token the user presents to access a resource
 message ValidateAccessTokenRequest {
     string accessToken = 1;
+    string requestID = 2;
 }
 
 // ValidateAccessTokenResponse is the response of the ValidateAccessTokenRequest
 message ValidateAccessTokenResponse {
-    bool isValid = 1;
+    string userID = 1;
+    int64 tokenVersion = 2;
+}
+
+message ValidateRefreshTokenRequest {
+    string refreshToken = 1;
+    string requestID = 2;
+}
+
+message ValidateRefreshTokenResponse {
+    string userID = 1;
 }
 
 // RotateRefreshTokenRequest refreshes a users refresh token upon expiration or upon access token expiration
 message RotateRefreshTokenRequest {
     string refreshToken = 1;
+    string requestID = 2;
 }
 
 // RotateRefreshTokenResponse is the response of the RotateRefreshTokenRequest
