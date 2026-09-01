@@ -38,3 +38,7 @@ func userTokensSetKey(userId string) string {
 func tokenVersionKey(userId string) string {
 	return fmt.Sprintf("token_version:%s", userId)
 }
+
+func blacklistTokenKey(tokenId string) string {
+	return fmt.Sprintf("blacklist_access_token:%s", tokenId)
+}
