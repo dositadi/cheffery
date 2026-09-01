@@ -2,11 +2,9 @@ package jwtserver
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
-	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,11 +25,7 @@ func (s *Server) TokenPairServer(ctx context.Context, req *gen.GenerateTokenPair
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-
-		if errors.Is(err, jwtdomain.ErrInternal) {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	refreshToken, err := s.port.ExecuteGenerateRefreshToken(ctx, reqId, userId)
@@ -43,11 +37,7 @@ func (s *Server) TokenPairServer(ctx context.Context, req *gen.GenerateTokenPair
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-
-		if errors.Is(err, jwtdomain.ErrInternal) {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &gen.GenerateTokenPairResponse{
