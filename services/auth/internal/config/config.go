@@ -30,6 +30,7 @@ func New(logger logger.Logger) *Config {
 func loadConfig(logger logger.Logger) *Config {
 	cfg := &Config{
 		RedisConfig: loadRedisConfig(logger),
+		JWTConfig:   loadJWTConfig(logger),
 	}
 	return cfg
 }

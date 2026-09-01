@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/dositadi/cheffery/services/shared/logger"
 	"github.com/redis/go-redis/v9"
@@ -19,6 +20,13 @@ func NewTokenStore(logger logger.Logger, client *redis.Client) *TokenStore {
 	}
 }
 
+type TokenData struct {
+	UserId    string
+	TokenId   string
+	ExpiresAt time.Time
+	Revoked   bool
+}
+
 func refreshTokenKey(tokenId string) string {
 	return fmt.Sprintf("refresh_token:%s", tokenId)
 }
@@ -29,4 +37,8 @@ func userTokensSetKey(userId string) string {
 
 func tokenVersionKey(userId string) string {
 	return fmt.Sprintf("token_version:%s", userId)
+}
+
+func blacklistTokenKey(tokenId string) string {
+	return fmt.Sprintf("blacklist_access_token:%s", tokenId)
 }
