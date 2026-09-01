@@ -10,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func (u *Usecase) ExecuteValidateAccessToken(ctx context.Context, tokenString string) error {
+func (u *Usecase) ExecuteValidateAccessToken(ctx context.Context, tokenString string) (*jwtdomain.JWTAccessClaim, error) {
 	reqId := middleware.GetReqID(ctx)
 	scope := "jwtapp.ExecuteValidateAccessToken"
 
@@ -30,17 +30,17 @@ func (u *Usecase) ExecuteValidateAccessToken(ctx context.Context, tokenString st
 			"Context": scope,
 		})
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return jwtdomain.ErrTokenExpired
+			return &jwtdomain.JWTAccessClaim{}, jwtdomain.ErrTokenExpired
 		}
-		return jwtdomain.ErrInvalidToken
+		return &jwtdomain.JWTAccessClaim{}, jwtdomain.ErrInvalidToken
 	}
 
 	claim, ok := token.Claims.(*jwtdomain.JWTAccessClaim)
 	if !ok || !token.Valid {
-		return jwtdomain.ErrInvalidTokenType
+		return &jwtdomain.JWTAccessClaim{}, jwtdomain.ErrInvalidTokenType
 	}
 
-	tokenVersion, err := u.store.GetTokenVersion(ctx, reqId, claim.UserID)
+	currVersion, err := u.store.GetTokenVersion(ctx, reqId, claim.UserID)
 	if err != nil {
 		u.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,
@@ -49,8 +49,37 @@ func (u *Usecase) ExecuteValidateAccessToken(ctx context.Context, tokenString st
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return jwtdomain.ErrInvalidToken
+		return &jwtdomain.JWTAccessClaim{}, jwtdomain.ErrInvalidToken
 	}
 
-	
+	if claim.TokenVersion != currVersion {
+		if err = u.store.RevokeAllRefreshToken(ctx, reqId, claim.Subject); err != nil {
+			u.logger.PrintError(err, reqId, customerror.InternalError{
+				Inner:   err,
+				Message: err.Error(),
+				Misc:    nil,
+			}.Error(), map[string]string{
+				"Context": scope,
+			})
+		}
+		return &jwtdomain.JWTAccessClaim{}, jwtdomain.ErrInvalidToken
+	}
+
+	blacklisted, err := u.store.AccessTokenIsBlackListed(ctx, reqId, claim.ID)
+	if err != nil {
+		u.logger.PrintError(err, reqId, customerror.InternalError{
+			Inner:   err,
+			Message: err.Error(),
+			Misc:    nil,
+		}.Error(), map[string]string{
+			"Context": scope,
+		})
+		return &jwtdomain.JWTAccessClaim{}, jwtdomain.ErrInternal
+	}
+
+	if blacklisted {
+		return &jwtdomain.JWTAccessClaim{}, jwtdomain.ErrTokenBlacklisted
+	}
+
+	return claim, nil
 }
