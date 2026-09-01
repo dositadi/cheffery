@@ -31,7 +31,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// Issuer service isin charge of handling all the various request
+// Issuer service is in charge of handling all the various request
 type IssuerClient interface {
 	GenerateTokenPair(ctx context.Context, in *GenerateTokenPairRequest, opts ...grpc.CallOption) (*GenerateTokenPairResponse, error)
 	ValidateAccessToken(ctx context.Context, in *ValidateAccessTokenRequest, opts ...grpc.CallOption) (*ValidateAccessTokenResponse, error)
@@ -69,7 +69,7 @@ func (c *issuerClient) ValidateAccessToken(ctx context.Context, in *ValidateAcce
 // All implementations must embed UnimplementedIssuerServer
 // for forward compatibility.
 //
-// Issuer service isin charge of handling all the various request
+// Issuer service is in charge of handling all the various request
 type IssuerServer interface {
 	GenerateTokenPair(context.Context, *GenerateTokenPairRequest) (*GenerateTokenPairResponse, error)
 	ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error)

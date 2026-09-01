@@ -11,7 +11,7 @@ import (
 )
 
 func (u *Usecase) ExecuteValidateRefreshToken(ctx context.Context, reqId, refreshToken string) (*jwtdomain.JWTRefreshClaim, error) {
-	scope := "jwtapp.ExecuteValidateAccessToken"
+	scope := "jwtapp.ExecuteValidateRefreshToken"
 
 	token, err := jwt.ParseWithClaims(refreshToken, jwtdomain.JWTRefreshClaim{}, func(t *jwt.Token) (any, error) {
 		return []byte(u.cfg.RefreshKey), nil

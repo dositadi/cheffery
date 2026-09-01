@@ -36,7 +36,7 @@ func (u *Usecase) ExecuteGenerateRefreshToken(ctx context.Context, reqId, userId
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	// Store the token
@@ -48,7 +48,7 @@ func (u *Usecase) ExecuteGenerateRefreshToken(ctx context.Context, reqId, userId
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	return token, nil

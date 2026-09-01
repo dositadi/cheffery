@@ -10,10 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type ExecuteGenerateAccessTokenInput struct {
-	UserID string
-}
-
 func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, userId string) (string, error) {
 	tokenId := uuid.NewString()
 	scope := "jwtapp.ExecuteGenerateAccessToken()"
@@ -27,7 +23,7 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, 
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	claim := jwtdomain.JWTAccessClaim{
@@ -53,7 +49,7 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, 
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	return token, nil
