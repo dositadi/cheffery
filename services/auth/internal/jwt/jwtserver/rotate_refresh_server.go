@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
@@ -13,7 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) RotateRefreshTokenServer(ctx context.Context, req *gen.RotateRefreshTokenRequest) (*gen.RotateRefreshTokenResponse, error) {
+func (s *Server) RotateRefreshTokenServer(ctx context.Context, req *auth.RotateRefreshTokenRequest) (*auth.RotateRefreshTokenResponse, error) {
 	scope := "jwtserver.RotateRefreshTokenServer"
 	reqID := req.GetRequestID()
 	refreshToken := req.GetRequestID()

@@ -8,7 +8,7 @@
 
 // The package name helps avoid naming conflicts between proto definitions.
 
-package gen
+package auth
 
 import (
 	context "context"

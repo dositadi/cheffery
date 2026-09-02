@@ -6,7 +6,7 @@ package auth;
 
 // go_package specifies where the generated Go code should live.
 // The path is the Go import path of the generated package
-option go_package = "github.com/dositadi/cheffery/gen";
+option go_package = "github.com/dositadi/cheffery/auth";
 
 import "google/protobuf/timestamp.proto";
 

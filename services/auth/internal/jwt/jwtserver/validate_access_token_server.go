@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) ValidateAccessTokenServer(ctx context.Context, req *gen.ValidateAccessTokenRequest) (*gen.ValidateAccessTokenResponse, error) {
+func (s *Server) ValidateAccessTokenServer(ctx context.Context, req *auth.ValidateAccessTokenRequest) (*auth.ValidateAccessTokenResponse, error) {
 	reqId := req.GetRequestID()
 	token := req.GetAccessToken()
 	scope := "jwtserver.ValidateAccessTokenServer"

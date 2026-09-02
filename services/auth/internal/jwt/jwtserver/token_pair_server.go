@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
 	"github.com/dositadi/cheffery/services/shared/customerror"
@@ -12,7 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) TokenPairServer(ctx context.Context, req *gen.GenerateTokenPairRequest) (*gen.GenerateTokenPairResponse, error) {
+func (s *Server) TokenPairServer(ctx context.Context, req *auth.GenerateTokenPairRequest) (*auth.GenerateTokenPairResponse, error) {
 	reqId := req.GetRequestID()
 	userId := req.GetUserID()
 	scope := "jwtserver.TokenPairServer"

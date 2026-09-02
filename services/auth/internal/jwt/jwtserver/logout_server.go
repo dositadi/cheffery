@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
@@ -12,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) LogoutHandler(ctx context.Context, req *gen.LogoutRequest) (*gen.LogoutResponse, error) {
+func (s *Server) LogoutHandler(ctx context.Context, req *auth.LogoutRequest) (*auth.LogoutResponse, error) {
 	reqId := req.GetRequestID()
 	accessToken := req.GetAccessToken()
 	scope := "jwtserver.LogoutHandler"

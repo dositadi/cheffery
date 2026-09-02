@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package repository;
+
+option go_package = "github.com/dositadi/cheffery/repo";
+
+import "google/protobuf/timestamp.proto";
+
+message CreateUserRequest {
+    string name = 1;
+    string email = 2;
+    bytes passwordHash = 3;
+}
+
+message CreateUserResponse {
+    string id = 1;
+    google.protobuf.Timestamp createdAt = 2;
+}
+
+service Repository {
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+}
