@@ -12,4 +12,5 @@ type Executor interface {
 	ExecuteValidateAccessToken(ctx context.Context, reqId, tokenString string) (*jwtdomain.JWTAccessClaim, error)
 	ExecuteValidateRefreshToken(ctx context.Context, reqId, refreshToken string) (*jwtdomain.JWTRefreshClaim, error)
 	ExecuteLogout(ctx context.Context, arg jwtapp.ExecuteLogoutInput) (string, error)
+	ExecuteRotateRefreshToken(ctx context.Context, arg jwtapp.ExecuteRotateRefreshTokenInput) (jwtapp.ExecuteRotateRefreshTokenOutput, error)
 }
