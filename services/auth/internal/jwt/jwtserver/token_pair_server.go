@@ -5,6 +5,7 @@ import (
 	"time"
 
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
+	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,19 +17,10 @@ func (s *Server) TokenPairServer(ctx context.Context, req *gen.GenerateTokenPair
 	userId := req.GetUserID()
 	scope := "jwtserver.TokenPairServer"
 
-	accessToken, err := s.port.ExecuteGenerateAccessToken(ctx, reqId, userId)
-	if err != nil {
-		s.logger.PrintError(err, reqId, customerror.InternalError{
-			Inner:   err,
-			Message: err.Error(),
-			Misc:    nil,
-		}.Error(), map[string]string{
-			"Context": scope,
-		})
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	refreshToken, err := s.port.ExecuteGenerateRefreshToken(ctx, reqId, userId)
+	response, err := s.port.ExecuteGenerateTokenPair(ctx, jwtapp.ExecuteGenerateTokenPairInput{
+		UserID: userId,
+		ReqID:  reqId,
+	})
 	if err != nil {
 		s.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,
@@ -41,8 +33,8 @@ func (s *Server) TokenPairServer(ctx context.Context, req *gen.GenerateTokenPair
 	}
 
 	return &gen.GenerateTokenPairResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:  response.AccessToken,
+		RefreshToken: response.RefreshToken,
 		ExpiresAt:    timestamppb.New(time.Now().Add(s.cfg.AccessTTL)),
 	}, nil
 }

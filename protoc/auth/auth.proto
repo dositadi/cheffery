@@ -59,8 +59,20 @@ message RotateRefreshTokenResponse {
     google.protobuf.Timestamp expiresAt = 3;
 }
 
+message LogoutRequest {
+    string accessToken = 1;
+    string requestID = 2;
+}
+
+message LogoutResponse {
+    string userID = 1;
+}
+
 // Issuer service is in charge of handling all the various request
 service Issuer {
     rpc GenerateTokenPair(GenerateTokenPairRequest) returns (GenerateTokenPairResponse);
     rpc ValidateAccessToken (ValidateAccessTokenRequest) returns (ValidateAccessTokenResponse);
+    rpc ValidateRefreshToken (ValidateRefreshTokenRequest) returns (ValidateRefreshTokenResponse);
+    rpc Logout (LogoutRequest) returns (LogoutResponse);
+    rpc RotateRefreshToken (RotateRefreshTokenRequest) returns (RotateRefreshTokenResponse);
 }

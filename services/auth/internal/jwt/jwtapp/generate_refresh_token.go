@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (u *Usecase) ExecuteGenerateRefreshToken(ctx context.Context, reqId, userId string) (string, error) {
+func (u *Usecase) executeGenerateRefreshToken(ctx context.Context, reqId, userId string) (string, error) {
 	tokenId := uuid.NewString()
 	scope := "jwtapp.ExecuteGenerateAccessToken()"
 

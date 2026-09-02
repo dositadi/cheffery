@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, userId string) (string, error) {
+func (u *Usecase) executeGenerateAccessToken(ctx context.Context, reqId string, userId string) (string, error) {
 	tokenId := uuid.NewString()
 	scope := "jwtapp.ExecuteGenerateAccessToken()"
 

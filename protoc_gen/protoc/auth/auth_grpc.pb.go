@@ -23,8 +23,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Issuer_GenerateTokenPair_FullMethodName   = "/auth.Issuer/GenerateTokenPair"
-	Issuer_ValidateAccessToken_FullMethodName = "/auth.Issuer/ValidateAccessToken"
+	Issuer_GenerateTokenPair_FullMethodName    = "/auth.Issuer/GenerateTokenPair"
+	Issuer_ValidateAccessToken_FullMethodName  = "/auth.Issuer/ValidateAccessToken"
+	Issuer_ValidateRefreshToken_FullMethodName = "/auth.Issuer/ValidateRefreshToken"
+	Issuer_Logout_FullMethodName               = "/auth.Issuer/Logout"
+	Issuer_RotateRefreshToken_FullMethodName   = "/auth.Issuer/RotateRefreshToken"
 )
 
 // IssuerClient is the client API for Issuer service.
@@ -35,6 +38,9 @@ const (
 type IssuerClient interface {
 	GenerateTokenPair(ctx context.Context, in *GenerateTokenPairRequest, opts ...grpc.CallOption) (*GenerateTokenPairResponse, error)
 	ValidateAccessToken(ctx context.Context, in *ValidateAccessTokenRequest, opts ...grpc.CallOption) (*ValidateAccessTokenResponse, error)
+	ValidateRefreshToken(ctx context.Context, in *ValidateRefreshTokenRequest, opts ...grpc.CallOption) (*ValidateRefreshTokenResponse, error)
+	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	RotateRefreshToken(ctx context.Context, in *RotateRefreshTokenRequest, opts ...grpc.CallOption) (*RotateRefreshTokenResponse, error)
 }
 
 type issuerClient struct {
@@ -65,6 +71,36 @@ func (c *issuerClient) ValidateAccessToken(ctx context.Context, in *ValidateAcce
 	return out, nil
 }
 
+func (c *issuerClient) ValidateRefreshToken(ctx context.Context, in *ValidateRefreshTokenRequest, opts ...grpc.CallOption) (*ValidateRefreshTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ValidateRefreshTokenResponse)
+	err := c.cc.Invoke(ctx, Issuer_ValidateRefreshToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *issuerClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LogoutResponse)
+	err := c.cc.Invoke(ctx, Issuer_Logout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *issuerClient) RotateRefreshToken(ctx context.Context, in *RotateRefreshTokenRequest, opts ...grpc.CallOption) (*RotateRefreshTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RotateRefreshTokenResponse)
+	err := c.cc.Invoke(ctx, Issuer_RotateRefreshToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IssuerServer is the server API for Issuer service.
 // All implementations must embed UnimplementedIssuerServer
 // for forward compatibility.
@@ -73,6 +109,9 @@ func (c *issuerClient) ValidateAccessToken(ctx context.Context, in *ValidateAcce
 type IssuerServer interface {
 	GenerateTokenPair(context.Context, *GenerateTokenPairRequest) (*GenerateTokenPairResponse, error)
 	ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error)
+	ValidateRefreshToken(context.Context, *ValidateRefreshTokenRequest) (*ValidateRefreshTokenResponse, error)
+	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	RotateRefreshToken(context.Context, *RotateRefreshTokenRequest) (*RotateRefreshTokenResponse, error)
 	mustEmbedUnimplementedIssuerServer()
 }
 
@@ -88,6 +127,15 @@ func (UnimplementedIssuerServer) GenerateTokenPair(context.Context, *GenerateTok
 }
 func (UnimplementedIssuerServer) ValidateAccessToken(context.Context, *ValidateAccessTokenRequest) (*ValidateAccessTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ValidateAccessToken not implemented")
+}
+func (UnimplementedIssuerServer) ValidateRefreshToken(context.Context, *ValidateRefreshTokenRequest) (*ValidateRefreshTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ValidateRefreshToken not implemented")
+}
+func (UnimplementedIssuerServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedIssuerServer) RotateRefreshToken(context.Context, *RotateRefreshTokenRequest) (*RotateRefreshTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RotateRefreshToken not implemented")
 }
 func (UnimplementedIssuerServer) mustEmbedUnimplementedIssuerServer() {}
 func (UnimplementedIssuerServer) testEmbeddedByValue()                {}
@@ -146,6 +194,60 @@ func _Issuer_ValidateAccessToken_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Issuer_ValidateRefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateRefreshTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IssuerServer).ValidateRefreshToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Issuer_ValidateRefreshToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IssuerServer).ValidateRefreshToken(ctx, req.(*ValidateRefreshTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Issuer_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IssuerServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Issuer_Logout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IssuerServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Issuer_RotateRefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RotateRefreshTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IssuerServer).RotateRefreshToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Issuer_RotateRefreshToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IssuerServer).RotateRefreshToken(ctx, req.(*RotateRefreshTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Issuer_ServiceDesc is the grpc.ServiceDesc for Issuer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -160,6 +262,18 @@ var Issuer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ValidateAccessToken",
 			Handler:    _Issuer_ValidateAccessToken_Handler,
+		},
+		{
+			MethodName: "ValidateRefreshToken",
+			Handler:    _Issuer_ValidateRefreshToken_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _Issuer_Logout_Handler,
+		},
+		{
+			MethodName: "RotateRefreshToken",
+			Handler:    _Issuer_RotateRefreshToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
