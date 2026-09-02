@@ -1,12 +1,21 @@
 version: "2"
-cloud:
-    organization: ""
-    project: ""
-    hostname: ""
-servers: []
-sql: []
-overrides:
-    go: null
-plugins: []
-rules: []
-options: {}
+sql:
+  - engine: "postgresql"
+    schema: "services/repository/internal/migrations/*.sql"
+    queries: "services/repository/internal/store/query/*.sql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "services/repository/internal/store/sqlc"
+        sql_package: "pgx/v5"
+        sql_driver: "github.com/jackc/pgx/v5"
+        emit_pointers_for_null_types: true
+        emit_pointers_for_null_enum_types: true
+        emit_enum_valid_method: true
+        emit_all_enum_values: true
+        json_tags_case_style: "camel"
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
+          - db_type: "timestamptz"
+            go_type: "time.Time"
