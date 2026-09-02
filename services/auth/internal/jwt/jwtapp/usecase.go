@@ -8,6 +8,14 @@ import (
 
 type Usecase struct {
 	logger logger.Logger
-	cfg    config.JWTConfig
+	cfg    *config.JWTConfig
 	store  jwtdomain.TokenStore
+}
+
+func New(logger logger.Logger, cfg *config.JWTConfig, store jwtdomain.TokenStore) *Usecase {
+	return &Usecase{
+		logger: logger,
+		cfg:    cfg,
+		store:  store,
+	}
 }
