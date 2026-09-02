@@ -11,6 +11,7 @@ import (
 // @Description This is the auth service config file,
 // @Description It loads all the configurations the auth service needs to start running
 type Config struct {
+	ServerPort  string
 	RedisConfig *RedisConfig // Redis config
 	JWTConfig   *JWTConfig   // Jwt config
 }
@@ -29,6 +30,7 @@ func New(logger logger.Logger) *Config {
 // @Produce Config
 func loadConfig(logger logger.Logger) *Config {
 	cfg := &Config{
+		ServerPort:  getStringEnvOrDefault("AUTH_GRPC_PORT", "50051"),
 		RedisConfig: loadRedisConfig(logger),
 		JWTConfig:   loadJWTConfig(logger),
 	}

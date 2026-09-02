@@ -16,7 +16,6 @@ import (
 	"github.com/dositadi/cheffery/services/auth/internal/store"
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/dositadi/cheffery/services/shared/logger"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -47,7 +46,7 @@ func (a *App) startServer() {
 	scope := "platformapp.startServer"
 	reqId := "start-server"
 	// Listen to port
-	listener, err := net.Listen("tcp", ":50051")
+	listener, err := net.Listen("tcp", ":"+a.cfg.ServerPort)
 	if err != nil {
 		a.logger.PrintFatal(err, reqId, customerror.InternalError{
 			Inner:   err,
@@ -68,28 +67,30 @@ func (a *App) startServer() {
 	reflection.Register(grpcServer)
 
 	chSignal := make(chan os.Signal, 1)
+	chErr := make(chan error)
 	signal.Notify(chSignal, syscall.SIGINT, syscall.SIGTERM)
 
-	eg := new(errgroup.Group)
-
-	eg.Go(func() error {
+	go func() {
 		if err := grpcServer.Serve(listener); err != nil {
-			return err
+			chErr <- err
 		}
-		return nil
-	})
+	}()
 
-	a.logger.PrintInfo(reqId,"starting auth gRPC server on: ")
-
-	if err := eg.Wait(); err != nil {
+	select {
+	case err = <-chErr:
 		a.logger.PrintFatal(err, reqId, customerror.InternalError{
 			Inner:   err,
-			Message: fmt.Errorf("server stopped: %w", err).Error(),
+			Message: fmt.Errorf("failed to listen: %w", err).Error(),
 			Misc:    nil,
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
+	case <-chSignal:
 	}
+
+	a.logger.PrintInfo(reqId, "starting auth gRPC server on: :"+a.cfg.ServerPort, map[string]string{
+		"Context": scope,
+	})
 
 	<-chSignal
 
