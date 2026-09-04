@@ -9,3 +9,6 @@ repo-protoc:
 
 mig-create:
 	goose create -s -v -dir services/repository/internal/migrations ${m} sql
+
+sqlc-gen:
+	sqlc generate

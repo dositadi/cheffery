@@ -18,5 +18,6 @@ type User struct {
 	PasswordHash []byte
 	Createdat    time.Time
 	Updatedat    time.Time
+	Version      int32
 	Deletedat    pgtype.Timestamptz
 }

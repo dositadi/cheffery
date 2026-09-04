@@ -38,3 +38,49 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	err := row.Scan(&i.ID, &i.Createdat)
 	return i, err
 }
+
+const getUser = `-- name: GetUser :one
+SELECT id, name, email, password_hash, createdat, updatedat, version, deletedat FROM users
+WHERE id = $1 AND deletedAt IS NULL
+`
+
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.Createdat,
+		&i.Updatedat,
+		&i.Version,
+		&i.Deletedat,
+	)
+	return i, err
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users
+SET name = $1, email = $2, password_hash = $3, version = version + 1, updated_at = NOW()
+WHERE id = $4 AND version = $5
+`
+
+type UpdateUserParams struct {
+	Name         string
+	Email        string
+	PasswordHash []byte
+	ID           uuid.UUID
+	Version      int32
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.Exec(ctx, updateUser,
+		arg.Name,
+		arg.Email,
+		arg.PasswordHash,
+		arg.ID,
+		arg.Version,
+	)
+	return err
+}

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash BYTEA NOT NULL,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    version INTEGER NOT NULL DEFAULT 1,
     deletedAt TIMESTAMPTZ,
     UNIQUE (email)
 );
