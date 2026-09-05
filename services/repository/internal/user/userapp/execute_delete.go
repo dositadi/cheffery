@@ -12,21 +12,21 @@ import (
 	"github.com/google/uuid"
 )
 
-type ExecuteGetInput struct {
-	ReqID  string    `validate:"required"`
-	UserID uuid.UUID `validate:"required, eq=16"`
+type ExecuteDeleteInput struct {
+	ID    uuid.UUID `validate:"required, eq=16"`
+	ReqID string    `validate:"required"`
 }
 
-func (e ExecuteGetInput) validate(validate *validator.Validate) error {
+func (e ExecuteDeleteInput) validate(validate *validator.Validate) error {
 	if err := validate.Struct(e); err != nil {
 		var validateErrs validator.ValidationErrors
 		if errors.As(err, &validateErrs) {
 			for _, e := range validateErrs {
 				switch e.StructField() {
+				case "ID":
+					return fmt.Errorf("%w: %s", userdomain.ErrID, e.Error())
 				case "ReqID":
 					return fmt.Errorf("%w: %s", userdomain.ErrReqID, e.Error())
-				case "UserID":
-					return fmt.Errorf("%w: %s", userdomain.ErrID, e.Error())
 				}
 			}
 		}
@@ -35,8 +35,8 @@ func (e ExecuteGetInput) validate(validate *validator.Validate) error {
 	return nil
 }
 
-func (u *Usecase) ExecuteGet(ctx context.Context, arg ExecuteGetInput) (*userdomain.User, error) {
-	scope := "userapp.ExecuteGet"
+func (u *Usecase) ExecuteDelete(ctx context.Context, arg ExecuteDeleteInput) error {
+	scope := "userapp.ExecuteDelete"
 
 	if err := arg.validate(u.validate); err != nil {
 		if arg.ReqID == "" {
@@ -49,12 +49,12 @@ func (u *Usecase) ExecuteGet(ctx context.Context, arg ExecuteGetInput) (*userdom
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return nil, err
+		return err
 	}
 
-	response, err := u.repo.GetUser(ctx, userpostgres.GetUserInput{
+	user, err := u.ExecuteGet(ctx, ExecuteGetInput{
 		ReqID:  arg.ReqID,
-		UserID: arg.UserID,
+		UserID: arg.ID,
 	})
 	if err != nil {
 		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
@@ -64,19 +64,25 @@ func (u *Usecase) ExecuteGet(ctx context.Context, arg ExecuteGetInput) (*userdom
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		if errors.Is(err, userpostgres.ErrNotFound) {
-			return nil, userdomain.ErrNotFound
-		}
+		return err
+	}
+
+	if err := u.repo.DeleteUser(ctx, arg.ReqID, userpostgres.DeleteUserInput{
+		ID:      arg.ID,
+		Version: user.GetVersion(),
+	}); err != nil {
+		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+			Inner:   err,
+			Message: err.Error(),
+			Misc:    nil,
+		}.Error(), map[string]string{
+			"Context": scope,
+		})
+
 		if errors.Is(err, userpostgres.ErrRequestTimeout) {
-			return nil, userdomain.ErrTimeout
+			return userdomain.ErrTimeout
 		}
-		return nil, userdomain.ErrInternal
+		return userdomain.ErrInternal
 	}
-
-	user, err := userdomain.New(response.ID, response.Name, response.Email, response.PasswordHash, response.Version, response.Createdat, response.Updatedat)
-	if err != nil {
-		return nil, userdomain.ErrInternal
-	}
-
-	return user, nil
+	return nil
 }

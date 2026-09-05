@@ -88,8 +88,8 @@ getUser:
 	}
 
 	var deletedAt *time.Time
-	if response.Deletedat.Valid {
-		deletedAt = &response.Deletedat.Time
+	if response.DeletedAt.Valid {
+		deletedAt = &response.DeletedAt.Time
 	}
 
 	return GetUserOutput{

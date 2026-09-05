@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     version INTEGER NOT NULL DEFAULT 1,
-    deletedAt TIMESTAMPTZ
+    deleted_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_name ON users (name text_pattern_ops);

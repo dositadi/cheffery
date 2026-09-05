@@ -39,9 +39,25 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	return i, err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+UPDATE users
+SET deleted_at = NOW(), version = version + 1, updated_at = NOW()
+WHERE id = $1 AND version = $2
+`
+
+type DeleteUserParams struct {
+	ID      uuid.UUID
+	Version int32
+}
+
+func (q *Queries) DeleteUser(ctx context.Context, arg DeleteUserParams) error {
+	_, err := q.db.Exec(ctx, deleteUser, arg.ID, arg.Version)
+	return err
+}
+
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, password_hash, created_at, updated_at, version, deletedat FROM users
-WHERE id = $1 AND deletedAt IS NULL
+SELECT id, name, email, password_hash, created_at, updated_at, version, deleted_at FROM users
+WHERE id = $1 AND deleted_at IS NULL
 `
 
 func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -55,7 +71,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Version,
-		&i.Deletedat,
+		&i.DeletedAt,
 	)
 	return i, err
 }

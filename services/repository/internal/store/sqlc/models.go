@@ -19,5 +19,5 @@ type User struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	Version      int32
-	Deletedat    pgtype.Timestamptz
+	DeletedAt    pgtype.Timestamptz
 }

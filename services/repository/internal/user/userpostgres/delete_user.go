@@ -8,33 +8,29 @@ import (
 	"github.com/dositadi/cheffery/services/repository/internal/store/sqlc"
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type UpdateUserInput struct {
-	Name         string
-	Email        string
-	PasswordHash []byte
-	ID           uuid.UUID
-	Version      int32
+type DeleteUserInput struct {
+	ID      uuid.UUID
+	Version int32
 }
 
-func (r *Repository) UpdateUser(ctx context.Context, reqID string, arg UpdateUserInput) error {
-	scope := "userpostgres.UpdateUser"
+func (r *Repository) DeleteUser(ctx context.Context, reqID string, arg DeleteUserInput) error {
+	scope := "userpostgres.DeleteUser"
 
 	querier := sqlc.New(r.pgPool)
 	wait := r.retryCfg.MinWait
 	var err error
 
-updateUser:
+deleteUser:
 	for attempt := range r.retryCfg.MaxAttempt {
-		err = querier.UpdateUser(ctx, sqlc.UpdateUserParams(arg))
+		err = querier.DeleteUser(ctx, sqlc.DeleteUserParams(arg))
 		if err == nil {
-			break updateUser
+			break deleteUser
 		}
 
 		if !customerror.IsRetryableError(err) {
-			break updateUser
+			break deleteUser
 		}
 
 		customerror.LogAttempt(r.logger, err, reqID, attempt, scope)
@@ -50,7 +46,7 @@ updateUser:
 					"Context": scope,
 				})
 				err = ctx.Err()
-				break updateUser
+				break deleteUser
 			case <-time.After(wait):
 				wait *= 2
 				if wait > r.retryCfg.MaxWait {
@@ -67,14 +63,6 @@ updateUser:
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			switch pgErr.ConstraintName {
-			case "idx_email":
-				return ErrEmailConflict
-			}
-		}
 
 		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 			return ErrRequestTimeout

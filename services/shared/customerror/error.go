@@ -45,7 +45,7 @@ func IsRetryableError(err error) bool {
 		case pgerrcode.SerializationFailure, pgerrcode.DeadlockDetected, pgerrcode.CannotConnectNow:
 			return true
 		}
-		if pgerrcode.IsConnectionException(pgErr); err != nil {
+		if pgerrcode.IsConnectionException(pgErr.Code) {
 			return true
 		}
 	}
@@ -58,7 +58,7 @@ func IsRetryableError(err error) bool {
 }
 
 func LogAttempt(logger logger.Logger, err error, reqId string, attempt int, scope string) {
-	logger.PrintError(err, reqId, fmt.Sprintln("%s: occurred after %v attempts", err.Error(), attempt), map[string]string{
+	logger.PrintError(err, reqId, fmt.Sprintf("%s: occurred after %v attempts", err.Error(), attempt), map[string]string{
 		"Context": scope,
 	})
 }
