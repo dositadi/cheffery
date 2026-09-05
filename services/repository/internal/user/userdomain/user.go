@@ -74,6 +74,10 @@ func (u User) GetVersion() int32       { return u.version }
 func (u User) GetCreatedAt() time.Time { return u.createdAt }
 func (u User) GetUpdatedAt() time.Time { return u.updatedAt }
 
+func (u *User) SetName(name string)                 { u.name = name }
+func (u *User) SetEmail(email string)               { u.email = email }
+func (u *User) SetPasswordHash(passwordHash []byte) { u.passwordHash = passwordHash }
+
 type CompareFunc func(hashedPassword, password []byte) error
 
 func (u User) Compare(password []byte, fn CompareFunc) error { return fn(u.passwordHash, password) }
