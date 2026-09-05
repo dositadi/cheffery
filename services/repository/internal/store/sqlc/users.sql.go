@@ -18,7 +18,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3
 )
-RETURNING id, createdAt
+RETURNING id, created_at
 `
 
 type CreateUserParams struct {
@@ -29,18 +29,18 @@ type CreateUserParams struct {
 
 type CreateUserRow struct {
 	ID        uuid.UUID
-	Createdat time.Time
+	CreatedAt time.Time
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser, arg.Name, arg.Email, arg.PasswordHash)
 	var i CreateUserRow
-	err := row.Scan(&i.ID, &i.Createdat)
+	err := row.Scan(&i.ID, &i.CreatedAt)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, password_hash, createdat, updatedat, version, deletedat FROM users
+SELECT id, name, email, password_hash, created_at, updated_at, version, deletedat FROM users
 WHERE id = $1 AND deletedAt IS NULL
 `
 
@@ -52,8 +52,8 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Name,
 		&i.Email,
 		&i.PasswordHash,
-		&i.Createdat,
-		&i.Updatedat,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.Version,
 		&i.Deletedat,
 	)

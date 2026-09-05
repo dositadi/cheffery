@@ -16,8 +16,8 @@ type User struct {
 	Name         string
 	Email        string
 	PasswordHash []byte
-	Createdat    time.Time
-	Updatedat    time.Time
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 	Version      int32
 	Deletedat    pgtype.Timestamptz
 }

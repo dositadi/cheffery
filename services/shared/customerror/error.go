@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/dositadi/cheffery/services/shared/logger"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -28,7 +29,7 @@ func (i InternalError) Error() string {
 	return fmt.Sprintf("%v: %s|%+v", i.Inner, i.Message, i.Misc)
 }
 
-func RetryableError(err error) bool {
+func IsRetryableError(err error) bool {
 	if nil == err {
 		return false
 	}
@@ -54,4 +55,10 @@ func RetryableError(err error) bool {
 	}
 
 	return false
+}
+
+func LogAttempt(logger logger.Logger, err error, reqId string, attempt int, scope string) {
+	logger.PrintError(err, reqId, fmt.Sprintln("%s: occurred after %v attempts", err.Error(), attempt), map[string]string{
+		"Context": scope,
+	})
 }
