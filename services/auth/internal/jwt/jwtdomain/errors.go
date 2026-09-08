@@ -7,4 +7,6 @@ var (
 	ErrTokenExpired     = errors.New("jwtdomain: token expired")
 	ErrInvalidToken     = errors.New("jwtdomain: invalid token")
 	ErrInvalidTokenType = errors.New("jwtdomain: invalid token type")
+	ErrInternal         = errors.New("jwtdomain: something wrong happened.")
+	ErrTokenBlacklisted = errors.New("jwtdomain: token blacklisted")
 )

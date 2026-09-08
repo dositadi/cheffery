@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (u *Usecase) ExecuteGenerateRefreshToken(ctx context.Context, reqId, userId string) (string, error) {
+func (u *Usecase) executeGenerateRefreshToken(ctx context.Context, reqId, userId string) (string, error) {
 	tokenId := uuid.NewString()
 	scope := "jwtapp.ExecuteGenerateAccessToken()"
 
@@ -27,7 +27,7 @@ func (u *Usecase) ExecuteGenerateRefreshToken(ctx context.Context, reqId, userId
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString(u.cfg.AccessKey)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString([]byte(u.cfg.AccessKey))
 	if err != nil {
 		u.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,
@@ -36,7 +36,7 @@ func (u *Usecase) ExecuteGenerateRefreshToken(ctx context.Context, reqId, userId
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	// Store the token
@@ -48,7 +48,7 @@ func (u *Usecase) ExecuteGenerateRefreshToken(ctx context.Context, reqId, userId
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	return token, nil

@@ -14,7 +14,7 @@ type Redis struct {
 	Metric *ConnMetric
 }
 
-func New(logger logger.Logger, cfg config.RedisConfig) *Redis {
+func New(logger logger.Logger, cfg *config.RedisConfig) *Redis {
 	client, metric := newClient(logger, cfg)
 	return &Redis{
 		Client: client,
@@ -30,7 +30,7 @@ func New(logger logger.Logger, cfg config.RedisConfig) *Redis {
 	}
 } */
 
-func newClient(logger logger.Logger, cfg config.RedisConfig) (*redis.Client, *ConnMetric) {
+func newClient(logger logger.Logger, cfg *config.RedisConfig) (*redis.Client, *ConnMetric) {
 	opt := &redis.Options{
 		Addr:     fmt.Sprintf("%s:%v", cfg.Host, cfg.Port),
 		Username: cfg.Username,

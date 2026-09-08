@@ -1,7 +1,14 @@
 package customerror
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"net"
+
+	"github.com/dositadi/cheffery/services/shared/logger"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type InternalError struct {
@@ -20,4 +27,38 @@ func (i InternalError) Wrap(err error) error {
 
 func (i InternalError) Error() string {
 	return fmt.Sprintf("%v: %s|%+v", i.Inner, i.Message, i.Misc)
+}
+
+func IsRetryableError(err error) bool {
+	if nil == err {
+		return false
+	}
+
+	var netErr net.Error
+	if errors.As(err, &netErr) {
+		return netErr.Timeout()
+	}
+
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case pgerrcode.SerializationFailure, pgerrcode.DeadlockDetected, pgerrcode.CannotConnectNow:
+			return true
+		}
+		if pgerrcode.IsConnectionException(pgErr.Code) {
+			return true
+		}
+	}
+
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return false
+	}
+
+	return false
+}
+
+func LogAttempt(logger logger.Logger, err error, reqId string, attempt int, scope string) {
+	logger.PrintError(err, reqId, fmt.Sprintf("%s: occurred after %v attempts", err.Error(), attempt), map[string]string{
+		"Context": scope,
+	})
 }

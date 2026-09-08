@@ -10,16 +10,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type ExecuteGenerateAccessTokenInput struct {
-	UserID string
-	Name   string
-}
-
-func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, arg ExecuteGenerateAccessTokenInput) (string, error) {
+func (u *Usecase) executeGenerateAccessToken(ctx context.Context, reqId string, userId string) (string, error) {
 	tokenId := uuid.NewString()
 	scope := "jwtapp.ExecuteGenerateAccessToken()"
 
-	version, err := u.store.GetTokenVersion(ctx, reqId, arg.UserID)
+	version, err := u.store.GetTokenVersion(ctx, reqId, userId)
 	if err != nil {
 		u.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,
@@ -28,16 +23,15 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, 
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	claim := jwtdomain.JWTAccessClaim{
-		UserID:       arg.UserID,
-		UserName:     arg.Name,
+		UserID:       userId,
 		TokenVersion: version,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    jwtdomain.Issuer.String(),
-			Subject:   arg.UserID,
+			Subject:   userId,
 			Audience:  jwt.ClaimStrings{"cheffery:user", "cheffery:app"},
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(u.cfg.AccessTTL)),
 			NotBefore: jwt.NewNumericDate(time.Now()),
@@ -46,7 +40,7 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, 
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString(u.cfg.AccessKey)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString([]byte(u.cfg.AccessKey))
 	if err != nil {
 		u.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,
@@ -55,7 +49,7 @@ func (u *Usecase) ExecuteGenerateAccessToken(ctx context.Context, reqId string, 
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return "", err
+		return "", jwtdomain.ErrInternal
 	}
 
 	return token, nil
