@@ -50,30 +50,66 @@ func (p *Postgres) InitDB(ctx context.Context) *pgxpool.Pool {
 		MinIdleConns:      int32(p.pgCfg.MinIdleConn),
 	}
 
+	cfg.PrepareConn = func(ctx context.Context, c *pgx.Conn) (bool, error) {
+		p.logger.PrintInfo("db:prepare-conn", fmt.Sprintf("Preparing connection to %s:%v", c.Config().Host, c.Config().Port), map[string]string{
+			"Context": scope,
+		})
+		return true, nil
+	}
+
 	cfg.BeforeConnect = func(ctx context.Context, cc *pgx.ConnConfig) error {
-		p.logger.PrintInfo("db:before-connect", fmt.Sprintf("Connecting to %s:%v", cfg.ConnConfig.Host, cfg.ConnConfig.Port), map[string]string{
+		p.logger.PrintInfo("db:before-connect", fmt.Sprintf("Connecting to %s:%v", cc.Host, cc.Port), map[string]string{
 			"Context": scope,
 		})
 		return nil
+	}
+
+	cfg.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+		p.logger.PrintInfo("db:after-connect", fmt.Sprintf("Connected to %s:%v", c.Config().Host, c.Config().Port), map[string]string{
+			"Context": scope,
+		})
+		return nil
+	}
+
+	cfg.AfterRelease = func(c *pgx.Conn) bool {
+		p.logger.PrintInfo("db:after-release", fmt.Sprintf("Connection to %s:%v released", c.Config().Host, c.Config().Port), map[string]string{
+			"Context": scope,
+		})
+		return true
 	}
 
 	return p.connect(ctx, cfg)
 }
 
 func (p *Postgres) connect(ctx context.Context, cfg *pgxpool.Config) *pgxpool.Pool {
+	scope := "postgres.connect"
+	wait := p.retryCfg.MinWait
 	for attempt := range p.retryCfg.MaxAttempt {
 		dbPool, err := pgxpool.NewWithConfig(ctx, cfg)
 		if err == nil {
 			return dbPool
 		}
 		p.logger.PrintError(err, "init-db", err.Error(), map[string]string{
-			"Context": "postgres.connect",
+			"Context": scope,
 			"Attempt": strconv.Itoa(attempt),
 		})
-		time.Sleep(p.retryCfg.MaxWait)
+
+		select {
+		case <-ctx.Done():
+			p.logger.PrintFatal(nil, "init-db", "Failed to connect to the database", map[string]string{
+				"Context": scope,
+			})
+			return nil
+		case <-time.After(wait):
+			wait *= 2
+			if wait > p.retryCfg.MaxWait {
+				wait = p.retryCfg.MaxWait
+			}
+		}
+
 	}
 	p.logger.PrintFatal(nil, "init-db", "Failed to connect to the database", map[string]string{
-		"Context": "postgres.connect",
+		"Context": scope,
 	})
 	panic("")
 }
