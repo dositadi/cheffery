@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/dositadi/cheffery/services/shared/logger"
 )
@@ -27,17 +29,18 @@ func getStringOrDefault(key, fallback string) string {
 	return fallback
 }
 
-/* func getDurationOrDefault(key string, fallback time.Duration) time.Duration {
+func getDurationOrDefault(key string, fallback time.Duration) time.Duration {
 	if dur, err := time.ParseDuration(os.Getenv(key)); err == nil {
 		return dur
 	}
 	return fallback
 }
 
-func getIntOrDefault(key string, fallback int) int {
+func getIntOrDefault(key string, fallback uint16) uint16 {
 	if val, err := strconv.Atoi(os.Getenv(key)); err == nil {
-		return val
+		if val > 0 {
+			return uint16(val)
+		}
 	}
 	return fallback
 }
-*/
