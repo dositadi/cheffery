@@ -27,7 +27,7 @@ func New(logger logger.Logger, cfg *config.PostgresEnv, retryCfg *config.RetryCo
 	}
 }
 
-func (p *Postgres) InitDB(ctx context.Context) *pgxpool.Pool {
+func (p *Postgres) InitDB(ctx context.Context) (*pgxpool.Pool,*Metrics) {
 	scope := "postgres.InitDB"
 	connConfig := &pgx.ConnConfig{
 		Config: pgconn.Config{
@@ -117,7 +117,7 @@ func (p *Postgres) InitDB(ctx context.Context) *pgxpool.Pool {
 		})
 	}
 
-	return p.connect(ctx, cfg)
+	return p.connect(ctx, cfg), metrics
 }
 
 func (p *Postgres) connect(ctx context.Context, cfg *pgxpool.Config) *pgxpool.Pool {
