@@ -50,7 +50,15 @@ func (p *Postgres) InitDB(ctx context.Context) *pgxpool.Pool {
 		MinIdleConns:      int32(p.pgCfg.MinIdleConn),
 	}
 
+	metrics := &Metrics{}
+
 	cfg.PrepareConn = func(ctx context.Context, c *pgx.Conn) (bool, error) {
+		metrics.OnAcquire()
+
+		if c.IsClosed() {
+			return false, nil
+		}
+
 		p.logger.PrintInfo("db:prepare-conn", fmt.Sprintf("Preparing connection to %s:%v", c.Config().Host, c.Config().Port), map[string]string{
 			"Context": scope,
 		})
@@ -65,17 +73,48 @@ func (p *Postgres) InitDB(ctx context.Context) *pgxpool.Pool {
 	}
 
 	cfg.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
-		p.logger.PrintInfo("db:after-connect", fmt.Sprintf("Connected to %s:%v", c.Config().Host, c.Config().Port), map[string]string{
+		reqID := "db:after-connect"
+
+		metrics.OnCreate()
+
+		// Setting session level parameters
+		_, err := c.Exec(ctx, "SET statement_timeout = '30s'")
+		if err != nil {
+			p.logger.PrintError(err, reqID, fmt.Errorf("Failed to set session level parameters (statement_timeout): %w", err).Error(), map[string]string{
+				"Context": scope,
+			})
+			return err
+		}
+
+		_, err = c.Exec(ctx, "SET lock_timeout = '10s'")
+		if err != nil {
+			p.logger.PrintError(err, reqID, fmt.Errorf("Failed to set session level parameters (lock_timeout): %w", err).Error(), map[string]string{
+				"Context": scope,
+			})
+			return err
+		}
+
+		p.logger.PrintInfo("", fmt.Sprintf("Connected to %s:%v", c.Config().Host, c.Config().Port), map[string]string{
 			"Context": scope,
 		})
 		return nil
 	}
 
 	cfg.AfterRelease = func(c *pgx.Conn) bool {
+		metrics.OnRelease()
+
 		p.logger.PrintInfo("db:after-release", fmt.Sprintf("Connection to %s:%v released", c.Config().Host, c.Config().Port), map[string]string{
 			"Context": scope,
 		})
 		return true
+	}
+
+	cfg.BeforeClose = func(c *pgx.Conn) {
+		metrics.OnDestroyed()
+
+		p.logger.PrintInfo("db:before-close", fmt.Sprintf("Connection to %s:%v destroyed", c.Config().Host, c.Config().Port), map[string]string{
+			"Context": scope,
+		})
 	}
 
 	return p.connect(ctx, cfg)
