@@ -14,7 +14,7 @@ import (
 
 type ExecuteDeleteInput struct {
 	ID    uuid.UUID `validate:"required, uuid"`
-	ReqID string    `validate:"required"`
+	ReqID string    `validate:"omitempty"`
 }
 
 func (e ExecuteDeleteInput) validate(validate *validator.Validate) error {

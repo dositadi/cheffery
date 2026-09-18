@@ -13,7 +13,7 @@ import (
 )
 
 type ExecuteGetInput struct {
-	ReqID  string    `validate:"required"`
+	ReqID  string    `validate:"omitempty"`
 	UserID uuid.UUID `validate:"required, uuid"`
 }
 

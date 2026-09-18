@@ -19,7 +19,7 @@ type ExecuteUpdateInput struct {
 	Password    string    `validate:"omitempty, gte=8"`
 	OldPassword string    `validate:"omitempty, gte=8"`
 	ID          uuid.UUID `validate:"required, uuid"`
-	ReqID       string    `validate:"required"`
+	ReqID       string    `validate:"omitempty"`
 }
 
 func (e ExecuteUpdateInput) validate(validate *validator.Validate) error {

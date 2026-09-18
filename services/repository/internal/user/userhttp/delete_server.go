@@ -11,17 +11,16 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*repository.GetUserResponse, error) {
+func (s *Server) DeleteServer(ctx context.Context, req *repository.DeleteUserRequest) (*repository.DeleteUserResponse, error) {
 	reqID := req.GetReqID()
 	if reqID == "" {
 		reqID = uuid.NewString()
 	}
-	scope := "userhttp.GetUser"
+	scope := "userhttp.DeleteServer"
 
-	userID, err := uuid.Parse(req.GetUserID())
+	userId, err := uuid.Parse(req.GetId())
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
@@ -33,11 +32,10 @@ func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*
 		return nil, status.Error(codes.Unauthenticated, userdomain.ErrID.Error())
 	}
 
-	user, err := s.executor.ExecuteGet(ctx, userapp.ExecuteGetInput{
-		ReqID:  reqID,
-		UserID: userID,
-	})
-	if err != nil {
+	if err := s.executor.ExecuteDelete(ctx, userapp.ExecuteDeleteInput{
+		ID:    userId,
+		ReqID: req.GetReqID(),
+	}); err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
@@ -45,7 +43,9 @@ func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-
+		if errors.Is(err, userdomain.ErrID) {
+			return nil, status.Error(codes.Unauthenticated, err.Error())
+		}
 		if errors.Is(err, userdomain.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
@@ -54,13 +54,5 @@ func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
-	return &repository.GetUserResponse{
-		Id:        user.GetID().String(),
-		Name:      user.GetName(),
-		Email:     user.GetEmail(),
-		Version:   user.GetVersion(),
-		CreatedAt: timestamppb.New(user.GetCreatedAt()),
-		UpdatedAt: timestamppb.New(user.GetUpdatedAt()),
-	}, nil
+	return &repository.DeleteUserResponse{}, nil
 }

@@ -15,10 +15,14 @@ import (
 )
 
 func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserRequest) (*repository.UpdateUserResponse, error) {
-	reqID := req.ReqID
+	reqID := req.GetReqID()
+	if reqID == "" {
+		reqID = uuid.NewString()
+	}
+
 	scope := "userhttp.UpdateUser"
 
-	userId, err := uuid.Parse(req.Id)
+	userId, err := uuid.Parse(req.GetId())
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
@@ -31,10 +35,10 @@ func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserReque
 	}
 
 	response, err := s.executor.ExecuteUpdate(ctx, userapp.ExecuteUpdateInput{
-		Name:        req.Name,
-		Email:       req.Email,
-		Password:    req.NewPassword,
-		OldPassword: req.OldPassword,
+		Name:        req.GetName(),
+		Email:       req.GetEmail(),
+		Password:    req.GetNewPassword(),
+		OldPassword: req.GetOldPassword(),
 		ID:          userId,
 		ReqID:       reqID,
 	})
@@ -47,13 +51,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserReque
 			"Context": scope,
 		})
 
-		if errors.Is(err, userdomain.ErrName) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
-		}
-		if errors.Is(err, userdomain.ErrEmail) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
-		}
-		if errors.Is(err, userdomain.ErrPassword) {
+		if errors.Is(err, userdomain.ErrName) || errors.Is(err, userdomain.ErrEmail) || errors.Is(err, userdomain.ErrPassword) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
 		if errors.Is(err, userdomain.ErrID) {

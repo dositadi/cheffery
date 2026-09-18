@@ -17,7 +17,7 @@ type ExecuteCreateInput struct {
 	Name     string `validate:"required, gte=3"`
 	Email    string `validate:"required, email"`
 	Password string `validate:"password, gte=8"`
-	ReqID    string `validate:"required"`
+	ReqID    string `validate:"omitempty"`
 }
 
 func (e ExecuteCreateInput) validate(validate *validator.Validate) error {
