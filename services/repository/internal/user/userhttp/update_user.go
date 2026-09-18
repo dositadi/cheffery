@@ -14,11 +14,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*repository.GetUserResponse, error) {
-	reqID := req.GetReqID()
-	scope := "userhttp.GetUser"
+func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserRequest) (*repository.UpdateUserResponse, error) {
+	reqID := req.ReqID
+	scope := "userhttp.UpdateUser"
 
-	userID, err := uuid.Parse(req.UserID)
+	userId, err := uuid.Parse(req.Id)
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
@@ -30,9 +30,13 @@ func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*
 		return nil, status.Error(codes.Unauthenticated, userdomain.ErrID.Error())
 	}
 
-	user, err := s.executor.ExecuteGet(ctx, userapp.ExecuteGetInput{
-		ReqID:  reqID,
-		UserID: userID,
+	response, err := s.executor.ExecuteUpdate(ctx, userapp.ExecuteUpdateInput{
+		Name:        req.Name,
+		Email:       req.Email,
+		Password:    req.NewPassword,
+		OldPassword: req.OldPassword,
+		ID:          userId,
+		ReqID:       reqID,
 	})
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
@@ -43,6 +47,21 @@ func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*
 			"Context": scope,
 		})
 
+		if errors.Is(err, userdomain.ErrName) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if errors.Is(err, userdomain.ErrEmail) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if errors.Is(err, userdomain.ErrPassword) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if errors.Is(err, userdomain.ErrID) {
+			return nil, status.Error(codes.Unauthenticated, err.Error())
+		}
+		if errors.Is(err, userdomain.ErrEmailConflict) {
+			return nil, status.Error(codes.AlreadyExists, err.Error())
+		}
 		if errors.Is(err, userdomain.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
@@ -52,12 +71,9 @@ func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &repository.GetUserResponse{
-		Id:        user.GetID().String(),
-		Name:      user.GetName(),
-		Email:     user.GetEmail(),
-		Version:   user.GetVersion(),
-		CreatedAt: timestamppb.New(user.GetCreatedAt()),
-		UpdatedAt: timestamppb.New(user.GetUpdatedAt()),
+	return &repository.UpdateUserResponse{
+		Datachanged: response.DataChanged,
+		Fields:      response.Fields,
+		Timestamp:   timestamppb.New(response.Timestamp),
 	}, nil
 }

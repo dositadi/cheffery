@@ -130,6 +130,10 @@ func (u *Usecase) ExecuteUpdate(ctx context.Context, arg ExecuteUpdateInput) (Ex
 			return ExecuteUpdateOutput{}, userdomain.ErrEmailConflict
 		}
 
+		if errors.Is(err, userpostgres.ErrNotFound) {
+			return ExecuteUpdateOutput{}, userdomain.ErrNotFound
+		}
+
 		if errors.Is(err, userpostgres.ErrRequestTimeout) {
 			return ExecuteUpdateOutput{}, userdomain.ErrTimeout
 		}
