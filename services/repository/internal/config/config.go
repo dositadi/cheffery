@@ -11,12 +11,14 @@ import (
 type ApplicationConfig struct {
 	RetryCfg    *RetryConfig
 	PostgresEnv *PostgresEnv
+	ServerPort  uint16
 }
 
 func LoadAppConfig(logger logger.Logger) *ApplicationConfig {
 	cfg := &ApplicationConfig{
 		RetryCfg:    defaultRetryConfig(),
 		PostgresEnv: loadPosgresEnv(logger),
+		ServerPort:  getIntOrDefault("REPO_GRPC_PORT", 50052),
 	}
 
 	return cfg

@@ -92,8 +92,6 @@ func (a *App) startServer() {
 		"Context": scope,
 	})
 
-	<-chSignal
-
 	grpcServer.GracefulStop()
 	a.redis.Client.Close()
 }
