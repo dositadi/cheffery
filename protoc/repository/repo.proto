@@ -64,7 +64,6 @@ message DBHealthResponse {
     DBHealth dbHealth = 2;
     google.protobuf.Duration latency = 3;
     google.protobuf.Timestamp timestamp = 4;
-    string reqID = 5;
 }
 
 message DBHealth {
