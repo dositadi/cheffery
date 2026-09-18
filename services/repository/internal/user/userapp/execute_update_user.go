@@ -14,11 +14,11 @@ import (
 )
 
 type ExecuteUpdateInput struct {
-	Name        string    `validate:"gte=3"`
-	Email       string    `validate:"email"`
-	Password    string    `validate:"gte=8"`
-	OldPassword string    `validate:"gte=8"`
-	ID          uuid.UUID `validate:"required, eq=16"`
+	Name        string    `validate:"omitempty, gte=3"`
+	Email       string    `validate:"omitempty, email"`
+	Password    string    `validate:"omitempty, gte=8"`
+	OldPassword string    `validate:"omitempty, gte=8"`
+	ID          uuid.UUID `validate:"required, uuid"`
 	ReqID       string    `validate:"required"`
 }
 

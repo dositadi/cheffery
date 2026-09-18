@@ -35,7 +35,7 @@ message GetUserResponse {
     string id = 1;
     string name = 2;
     string email = 3;
-    string version = 5;
+    int32 version = 5;
     google.protobuf.Timestamp createdAt = 6;
     google.protobuf.Timestamp updatedAt = 7;
 }
