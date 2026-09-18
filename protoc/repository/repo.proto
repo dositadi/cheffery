@@ -10,7 +10,7 @@ import "google/protobuf/duration.proto";
 message CreateUserRequest {
     string name = 1;
     string email = 2;
-    bytes passwordHash = 3;
+    string password = 3;
     string reqID = 4;
 }
 

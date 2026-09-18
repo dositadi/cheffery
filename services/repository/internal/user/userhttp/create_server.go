@@ -11,16 +11,22 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) DeleteServer(ctx context.Context, req *repository.DeleteUserRequest) (*repository.DeleteUserResponse, error) {
+func (s *Server) CreateUser(ctx context.Context, req *repository.CreateUserRequest) (*repository.CreateUserResponse, error) {
 	reqID := req.GetReqID()
 	if reqID == "" {
 		reqID = uuid.NewString()
 	}
-	scope := "userhttp.DeleteServer"
+	scope := "userhttp.CreateUser"
 
-	userId, err := uuid.Parse(req.GetId())
+	response, err := s.executor.ExecuteCreate(ctx, userapp.ExecuteCreateInput{
+		Name:     req.GetName(),
+		Email:    req.GetEmail(),
+		Password: req.GetPassword(),
+		ReqID:    reqID,
+	})
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
@@ -29,31 +35,23 @@ func (s *Server) DeleteServer(ctx context.Context, req *repository.DeleteUserReq
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return nil, status.Error(codes.Unauthenticated, userdomain.ErrID.Error())
-	}
-
-	if err := s.executor.ExecuteDelete(ctx, userapp.ExecuteDeleteInput{
-		ID:    userId,
-		ReqID: req.GetReqID(),
-	}); err != nil {
-		s.logger.PrintError(err, reqID, customerror.InternalError{
-			Inner:   err,
-			Message: err.Error(),
-			Misc:    nil,
-		}.Error(), map[string]string{
-			"Context": scope,
-		})
+		if errors.Is(err, userdomain.ErrName) || errors.Is(err, userdomain.ErrEmail) || errors.Is(err, userdomain.ErrPassword) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
 		if errors.Is(err, userdomain.ErrID) {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
-		if errors.Is(err, userdomain.ErrNotFound) {
-			return nil, status.Error(codes.NotFound, err.Error())
+		if errors.Is(err, userdomain.ErrEmailConflict) {
+			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
 		if errors.Is(err, userdomain.ErrTimeout) {
 			return nil, status.Error(codes.DeadlineExceeded, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	
-	return &repository.DeleteUserResponse{}, nil
+
+	return &repository.CreateUserResponse{
+		Id:        response.ID.String(),
+		CreatedAt: timestamppb.New(response.CreatedAt),
+	}, nil
 }
