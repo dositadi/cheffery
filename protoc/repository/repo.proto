@@ -2,9 +2,10 @@ syntax = "proto3";
 
 package repository;
 
-option go_package = "github.com/dositadi/cheffery/repo";
+option go_package = "github.com/dositadi/cheffery/repository";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 message CreateUserRequest {
     string name = 1;
@@ -17,6 +18,29 @@ message CreateUserResponse {
     google.protobuf.Timestamp createdAt = 2;
 }
 
+message DBHealthRequest {}
+
+message DBHealthResponse {
+    string status = 1;
+    DBHealth dbHealth = 2;
+    google.protobuf.Duration latency = 3;
+    google.protobuf.Timestamp timestamp = 4;
+}
+
+message DBHealth {
+    bool connected = 1;
+    bool poolHealthy = 2;
+    int32 totalConns = 3;
+    int32 idleConns = 4;
+    int32 acquiredConns = 5;
+    int32 acquiredCount = 6;
+    int32 createdCount = 7;
+    int32 releasedCount = 8;
+    int32 destroyedCount = 9;
+    string message = 10; 
+}
+
 service Repository {
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc DBHealth(DBHealthRequest) returns (DBHealthResponse);
 }

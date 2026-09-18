@@ -150,5 +150,5 @@ func (p *Postgres) connect(ctx context.Context, cfg *pgxpool.Config) *pgxpool.Po
 	p.logger.PrintFatal(nil, "init-db", "Failed to connect to the database", map[string]string{
 		"Context": scope,
 	})
-	panic("")
+	panic("Failed to connect to the database")
 }
