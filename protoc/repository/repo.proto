@@ -11,6 +11,7 @@ message CreateUserRequest {
     string name = 1;
     string email = 2;
     bytes passwordHash = 3;
+    string reqID = 4;
 }
 
 message CreateUserResponse {
@@ -18,13 +19,52 @@ message CreateUserResponse {
     google.protobuf.Timestamp createdAt = 2;
 }
 
-message DBHealthRequest {}
+message DeleteUserRequest {
+    string id = 1;
+    string reqID = 2;
+}
+
+message DeleteUserResponse {}
+
+message GetUserRequest {
+    string reqID = 1;
+    string userID = 2;
+}
+
+message GetUserResponse {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string version = 5;
+    google.protobuf.Timestamp createdAt = 6;
+    google.protobuf.Timestamp updatedAt = 7;
+}
+
+message UpdateUserRequest {
+    string name = 1;
+    string email = 2;
+    string newPassword = 3;
+    string oldPassword = 4;
+    string id = 5;
+    string reqID = 6;
+}
+
+message UpdateUserResponse {
+    bool datachanged = 1;
+    repeated string fields = 2;
+    google.protobuf.Timestamp timestamp = 3; 
+}
+
+message DBHealthRequest {
+    string reqID = 1; 
+}
 
 message DBHealthResponse {
     string status = 1;
     DBHealth dbHealth = 2;
     google.protobuf.Duration latency = 3;
     google.protobuf.Timestamp timestamp = 4;
+    string reqID = 5;
 }
 
 message DBHealth {
@@ -42,5 +82,8 @@ message DBHealth {
 
 service Repository {
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
     rpc DBHealth(DBHealthRequest) returns (DBHealthResponse);
 }

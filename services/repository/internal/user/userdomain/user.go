@@ -9,13 +9,13 @@ import (
 )
 
 type User struct {
-	id           uuid.UUID `validate:"required, eq=16"`
+	id           uuid.UUID `validate:"required, uuid"`
 	name         string    `validate:"required, gte=3"`
 	email        string    `validate:"required, email"`
 	passwordHash []byte    `validate:"required, gte=8"`
 	version      int32     `validate:"required, gte=1"`
 	createdAt    time.Time `validate:"required"`
-	updatedAt    time.Time
+	updatedAt    time.Time `validate:"omitempty"`
 }
 
 var validate *validator.Validate

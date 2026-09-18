@@ -13,7 +13,7 @@ import (
 )
 
 type ExecuteDeleteInput struct {
-	ID    uuid.UUID `validate:"required, eq=16"`
+	ID    uuid.UUID `validate:"required, uuid"`
 	ReqID string    `validate:"required"`
 }
 

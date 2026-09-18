@@ -47,7 +47,7 @@ func (e ExecuteUpdateInput) validate(validate *validator.Validate) error {
 type ExecuteUpdateOutput struct {
 	DataChanged bool
 	Fields      []string
-	UpdatedAt   time.Time
+	Timestamp   time.Time
 }
 
 func (u *Usecase) ExecuteUpdate(ctx context.Context, arg ExecuteUpdateInput) (ExecuteUpdateOutput, error) {
@@ -139,6 +139,6 @@ func (u *Usecase) ExecuteUpdate(ctx context.Context, arg ExecuteUpdateInput) (Ex
 	return ExecuteUpdateOutput{
 		DataChanged: len(changedFields) > 0,
 		Fields:      changedFields,
-		UpdatedAt:   time.Now(),
+		Timestamp:   time.Now(),
 	}, nil
 }

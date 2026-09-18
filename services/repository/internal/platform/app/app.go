@@ -32,7 +32,7 @@ type App struct {
 	canceFunc context.CancelFunc
 }
 
-func Init() *App {
+func New() *App {
 	app := &App{}
 
 	app.logger = logger.New(os.Stdout)
@@ -53,7 +53,7 @@ func Init() *App {
 	return app
 }
 
-func (a *App) startServer() {
+func (a *App) StartServer() {
 	scope := "app.startServer"
 	reqID := "start-server"
 

@@ -14,7 +14,7 @@ import (
 
 type ExecuteGetInput struct {
 	ReqID  string    `validate:"required"`
-	UserID uuid.UUID `validate:"required, eq=16"`
+	UserID uuid.UUID `validate:"required, uuid"`
 }
 
 func (e ExecuteGetInput) validate(validate *validator.Validate) error {
