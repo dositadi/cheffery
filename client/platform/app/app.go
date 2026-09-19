@@ -37,10 +37,3 @@ func New() *App {
 
 	return app
 }
-
-func (a *App) startServer() {
-	//During graceful shutdown
-	for _, conn := range a.conns {
-		conn.Close()
-	}
-}

@@ -10,11 +10,13 @@ import (
 
 type AppConfig struct {
 	Service *ServiceConfig
+	Server  *ServerConfig
 }
 
 func LoadAppConfig(logger logger.Logger) *AppConfig {
 	cfg := &AppConfig{
 		Service: loadServiceConfig(logger),
+		Server:  loadServerConfig(),
 	}
 	return cfg
 }

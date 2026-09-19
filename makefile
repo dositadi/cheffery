@@ -12,3 +12,7 @@ mig-create:
 
 sqlc-gen:
 	sqlc generate
+
+
+lint:
+	golangci-lint run
