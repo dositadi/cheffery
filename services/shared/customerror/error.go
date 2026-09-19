@@ -62,3 +62,7 @@ func LogAttempt(logger logger.Logger, err error, reqId string, attempt int, scop
 		"Context": scope,
 	})
 }
+
+func WrapValidateErr(domainErr error, message string) error {
+	return fmt.Errorf("%w:%s", domainErr, message)
+}
