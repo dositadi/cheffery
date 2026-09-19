@@ -9,13 +9,14 @@ import (
 	"github.com/dositadi/cheffery/services/repository/internal/user/userapp"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) DeleteUser(ctx context.Context, req *repository.DeleteUserRequest) (*repository.DeleteUserResponse, error) {
-	reqID := req.GetReqID()
+	reqID := middleware.GetReqID(ctx)
 	if reqID == "" {
 		reqID = fmt.Sprintf("delete-user:%s", uuid.NewString())
 	}
@@ -35,7 +36,6 @@ func (s *Server) DeleteUser(ctx context.Context, req *repository.DeleteUserReque
 
 	if err := s.executor.ExecuteDelete(ctx, userapp.ExecuteDeleteInput{
 		ID:    userId,
-		ReqID: req.GetReqID(),
 	}); err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,

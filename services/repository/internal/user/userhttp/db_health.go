@@ -6,6 +6,7 @@ import (
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,7 +15,7 @@ import (
 )
 
 func (s *Server) DBHealth(ctx context.Context, req *repository.DBHealthRequest) (*repository.DBHealthResponse, error) {
-	reqID := req.ReqID
+	reqID := middleware.GetReqID(ctx)
 	if reqID == "" {
 		reqID = fmt.Sprintf("db-health:%s", uuid.NewString())
 	}

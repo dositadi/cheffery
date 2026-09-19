@@ -33,8 +33,6 @@ func (e ExecuteCreateInput) validate(validate *validator.Validate) error {
 					return fmt.Errorf("%w: %s", userdomain.ErrEmail, e.Error())
 				case "Password":
 					return fmt.Errorf("%w: %s", userdomain.ErrPassword, e.Error())
-				case "ReqID":
-					return fmt.Errorf("%w: %s", userdomain.ErrReqID, e.Error())
 				}
 			}
 		}
@@ -79,7 +77,7 @@ func (u *Usecase) ExecuteCreate(ctx context.Context, arg ExecuteCreateInput) (Ex
 		return ExecuteCreateOutput{}, userdomain.ErrInternal
 	}
 
-	response, err := u.repo.CreateUser(ctx, arg.ReqID, userpostgres.CreateUserInput{
+	response, err := u.repo.CreateUser(ctx, userpostgres.CreateUserInput{
 		Name:         arg.Name,
 		Email:        arg.Email,
 		PasswordHash: hashedPassword,

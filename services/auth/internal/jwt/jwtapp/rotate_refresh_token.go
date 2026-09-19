@@ -6,10 +6,10 @@ import (
 
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 )
 
 type ExecuteRotateRefreshTokenInput struct {
-	ReqID        string
 	RefreshToken string
 }
 
@@ -21,10 +21,11 @@ type ExecuteRotateRefreshTokenOutput struct {
 
 func (u *Usecase) ExecuteRotateRefreshToken(ctx context.Context, arg ExecuteRotateRefreshTokenInput) (ExecuteRotateRefreshTokenOutput, error) {
 	scope := "jwtapp.ExecuteRotateRefreshToken"
+	reqID := middleware.GetReqID(ctx)
 
-	claim, err := u.ExecuteValidateRefreshToken(ctx, arg.ReqID, arg.RefreshToken)
+	claim, err := u.ExecuteValidateRefreshToken(ctx, arg.RefreshToken)
 	if err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,
@@ -35,8 +36,8 @@ func (u *Usecase) ExecuteRotateRefreshToken(ctx context.Context, arg ExecuteRota
 		return ExecuteRotateRefreshTokenOutput{}, err
 	}
 
-	if err := u.store.RevokeRefreshToken(ctx, arg.ReqID, claim.ID); err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+	if err := u.store.RevokeRefreshToken(ctx, reqID, claim.ID); err != nil {
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,
@@ -49,10 +50,10 @@ func (u *Usecase) ExecuteRotateRefreshToken(ctx context.Context, arg ExecuteRota
 
 	tokenPair, err := u.ExecuteGenerateTokenPair(ctx, ExecuteGenerateTokenPairInput{
 		UserID: claim.Subject,
-		ReqID:  arg.ReqID,
+		ReqID:  reqID,
 	})
 	if err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,

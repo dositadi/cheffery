@@ -7,28 +7,17 @@ import (
 
 	"github.com/dositadi/cheffery/services/repository/internal/store/sqlc"
 	"github.com/dositadi/cheffery/services/shared/customerror"
-	"github.com/google/uuid"
+	"github.com/go-chi/chi/middleware"
 	"github.com/jackc/pgx/v5"
 )
 
-type GetUserInput struct {
-	ReqID  string
-	UserID uuid.UUID
+type GetUserByEmailInput struct {
+	Email string
 }
 
-type GetUserOutput struct {
-	ID           uuid.UUID
-	Name         string
-	Email        string
-	PasswordHash []byte
-	Createdat    time.Time
-	Updatedat    time.Time
-	Version      int32
-	Deletedat    *time.Time
-}
-
-func (r *Repository) GetUser(ctx context.Context, arg GetUserInput) (GetUserOutput, error) {
+func (r *Repository) GetUserByEmail(ctx context.Context, arg GetUserByEmailInput) (GetUserOutput, error) {
 	scope := "userpostgres.GetUser"
+	reqID := middleware.GetReqID(ctx)
 
 	querier := sqlc.New(r.pgPool)
 
@@ -38,7 +27,7 @@ func (r *Repository) GetUser(ctx context.Context, arg GetUserInput) (GetUserOutp
 
 getUser:
 	for attempt := range r.retryCfg.MaxAttempt {
-		response, err = querier.GetUser(ctx, arg.UserID)
+		response, err = querier.GetUserByEmail(ctx, arg.Email)
 		if err == nil {
 			break getUser
 		}
@@ -47,12 +36,12 @@ getUser:
 			break getUser
 		}
 
-		customerror.LogAttempt(r.logger, err, arg.ReqID, attempt, scope)
+		customerror.LogAttempt(r.logger, err, reqID, attempt, scope)
 
 		if attempt < r.retryCfg.MaxAttempt {
 			select {
 			case <-ctx.Done():
-				r.logger.PrintError(ctx.Err(), arg.ReqID, customerror.InternalError{
+				r.logger.PrintError(ctx.Err(), reqID, customerror.InternalError{
 					Inner:   ctx.Err(),
 					Message: ctx.Err().Error(),
 					Misc:    nil,
@@ -70,7 +59,7 @@ getUser:
 		}
 	}
 	if err != nil {
-		r.logger.PrintError(ctx.Err(), arg.ReqID, customerror.InternalError{
+		r.logger.PrintError(ctx.Err(), reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,

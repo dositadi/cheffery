@@ -3,14 +3,13 @@ package jwtserver
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
-	"github.com/google/uuid"
+	"github.com/go-chi/chi/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,15 +17,10 @@ import (
 
 func (s *Server) RotateRefreshTokenServer(ctx context.Context, req *auth.RotateRefreshTokenRequest) (*auth.RotateRefreshTokenResponse, error) {
 	scope := "jwtserver.RotateRefreshTokenServer"
-	reqID := req.GetRequestID()
-	if reqID == "" {
-		reqID = fmt.Sprintf("rotate-refresh:%s", uuid.NewString())
-	}
-	refreshToken := req.GetRequestID()
+	reqID := middleware.GetReqID(ctx)
 
 	tokenPair, err := s.port.ExecuteRotateRefreshToken(ctx, jwtapp.ExecuteRotateRefreshTokenInput{
-		ReqID:        reqID,
-		RefreshToken: refreshToken,
+		RefreshToken: req.GetRefreshToken(),
 	})
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{

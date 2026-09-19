@@ -13,8 +13,9 @@ import (
 type Executors interface {
 	ExecuteCreate(ctx context.Context, arg userapp.ExecuteCreateInput) (userapp.ExecuteCreateOutput, error)
 	ExecuteDelete(ctx context.Context, arg userapp.ExecuteDeleteInput) error
-	ExecuteGet(ctx context.Context, arg userapp.ExecuteGetInput) (*userdomain.User, error)
+	ExecuteGetByID(ctx context.Context, arg userapp.ExecuteGetByIDInput) (*userdomain.User, error)
 	ExecuteUpdate(ctx context.Context, arg userapp.ExecuteUpdateInput) (userapp.ExecuteUpdateOutput, error)
+	ExecuteGetByEmail(ctx context.Context, arg userapp.ExecuteGetByEmailInput) (*userdomain.User, error)
 }
 
 type DBHealthChecker interface {

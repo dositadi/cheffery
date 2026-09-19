@@ -3,40 +3,23 @@ package userhttp
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userapp"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
-	"github.com/google/uuid"
+	"github.com/go-chi/chi/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*repository.GetUserResponse, error) {
-	reqID := req.GetReqID()
-	if reqID == "" {
-		reqID = fmt.Sprintf("get-user:%s", uuid.NewString())
-	}
+func (s *Server) GetUserByEmail(ctx context.Context, req *repository.GetUserByEmailRequest) (*repository.GetUserByEmailResponse, error) {
+	reqID := middleware.GetReqID(ctx)
 	scope := "userhttp.GetUser"
 
-	userID, err := uuid.Parse(req.GetUserID())
-	if err != nil {
-		s.logger.PrintError(err, reqID, customerror.InternalError{
-			Inner:   err,
-			Message: err.Error(),
-			Misc:    nil,
-		}.Error(), map[string]string{
-			"Context": scope,
-		})
-		return nil, status.Error(codes.Unauthenticated, userdomain.ErrID.Error())
-	}
-
-	user, err := s.executor.ExecuteGet(ctx, userapp.ExecuteGetInput{
-		ReqID:  reqID,
-		UserID: userID,
+	user, err := s.executor.ExecuteGetByEmail(ctx, userapp.ExecuteGetByEmailInput{
+		Email: req.GetEmail(),
 	})
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
@@ -56,7 +39,7 @@ func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &repository.GetUserResponse{
+	return &repository.GetUserByEmailResponse{
 		Id:        user.GetID().String(),
 		Name:      user.GetName(),
 		Email:     user.GetEmail(),

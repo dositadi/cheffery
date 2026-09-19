@@ -9,6 +9,7 @@ import (
 	"github.com/dositadi/cheffery/services/repository/internal/user/userdomain"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userpostgres"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -19,7 +20,6 @@ type ExecuteUpdateInput struct {
 	Password    string    `validate:"omitempty, gte=8"`
 	OldPassword string    `validate:"omitempty, gte=8"`
 	ID          uuid.UUID `validate:"required, uuid"`
-	ReqID       string    `validate:"omitempty"`
 }
 
 func (e ExecuteUpdateInput) validate(validate *validator.Validate) error {
@@ -52,12 +52,10 @@ type ExecuteUpdateOutput struct {
 
 func (u *Usecase) ExecuteUpdate(ctx context.Context, arg ExecuteUpdateInput) (ExecuteUpdateOutput, error) {
 	scope := "userapp.ExecuteUpdate"
+	reqID := middleware.GetReqID(ctx)
 
 	if err := arg.validate(u.validate); err != nil {
-		if arg.ReqID == "" {
-			arg.ReqID = "userapp.ExecuteCreate-Request"
-		}
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,
@@ -67,12 +65,11 @@ func (u *Usecase) ExecuteUpdate(ctx context.Context, arg ExecuteUpdateInput) (Ex
 		return ExecuteUpdateOutput{}, err
 	}
 
-	user, err := u.ExecuteGet(ctx, ExecuteGetInput{
-		ReqID:  arg.ReqID,
+	user, err := u.ExecuteGetByID(ctx, ExecuteGetByIDInput{
 		UserID: arg.ID,
 	})
 	if err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,
@@ -98,7 +95,7 @@ func (u *Usecase) ExecuteUpdate(ctx context.Context, arg ExecuteUpdateInput) (Ex
 		if err := user.Compare([]byte(arg.Password), u.bcrypt.Compare); err != nil {
 			newHashedPassword, err := u.bcrypt.GenerateHash([]byte(arg.Password))
 			if err != nil {
-				u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+				u.logger.PrintError(err, reqID, customerror.InternalError{
 					Inner:   err,
 					Message: err.Error(),
 					Misc:    nil,
@@ -112,14 +109,14 @@ func (u *Usecase) ExecuteUpdate(ctx context.Context, arg ExecuteUpdateInput) (Ex
 		}
 	}
 
-	if err := u.repo.UpdateUser(ctx, arg.ReqID, userpostgres.UpdateUserInput{
+	if err := u.repo.UpdateUser(ctx, userpostgres.UpdateUserInput{
 		Name:         user.GetName(),
 		Email:        user.GetEmail(),
 		PasswordHash: user.GetPasswordHash(),
 		ID:           user.GetID(),
 		Version:      user.GetVersion(),
 	}); err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,

@@ -3,26 +3,22 @@ package jwtserver
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
-	"github.com/google/uuid"
+	"github.com/go-chi/chi/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) ValidateRefreshTokenServer(ctx context.Context, req *auth.ValidateRefreshTokenRequest) (*auth.ValidateRefreshTokenResponse, error) {
-	reqId := req.GetRequestID()
-	if reqId == "" {
-		reqId = fmt.Sprintf("validate-refresh:%s", uuid.NewString())
-	}
+	reqId := middleware.GetReqID(ctx)
 	token := req.GetRefreshToken()
 	scope := "jwtserver.ValidateRefreshTokenServer"
 
-	claim, err := s.port.ExecuteValidateRefreshToken(ctx, reqId, token)
+	claim, err := s.port.ExecuteValidateRefreshToken(ctx, token)
 	if err != nil {
 		s.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,

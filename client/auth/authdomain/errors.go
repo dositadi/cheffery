@@ -13,3 +13,8 @@ var (
 	ErrTokenVersion = errors.New("authdomain: invalid version")
 	ErrInternal     = errors.New("authdomain: something went wrong")
 )
+
+var (
+	ErrEmail = errors.New("authdomain: invalid email")
+	ErrPassword = errors.New("authdomain: email should be at least 8 chars long")
+)

@@ -8,23 +8,21 @@ import (
 	"github.com/dositadi/cheffery/services/repository/internal/user/userdomain"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userpostgres"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
-type ExecuteGetInput struct {
-	ReqID  string    `validate:"omitempty"`
+type ExecuteGetByIDInput struct {
 	UserID uuid.UUID `validate:"required, uuid"`
 }
 
-func (e ExecuteGetInput) validate(validate *validator.Validate) error {
+func (e ExecuteGetByIDInput) validate(validate *validator.Validate) error {
 	if err := validate.Struct(e); err != nil {
 		var validateErrs validator.ValidationErrors
 		if errors.As(err, &validateErrs) {
 			for _, e := range validateErrs {
 				switch e.StructField() {
-				case "ReqID":
-					return fmt.Errorf("%w: %s", userdomain.ErrReqID, e.Error())
 				case "UserID":
 					return fmt.Errorf("%w: %s", userdomain.ErrID, e.Error())
 				}
@@ -35,14 +33,12 @@ func (e ExecuteGetInput) validate(validate *validator.Validate) error {
 	return nil
 }
 
-func (u *Usecase) ExecuteGet(ctx context.Context, arg ExecuteGetInput) (*userdomain.User, error) {
+func (u *Usecase) ExecuteGetByID(ctx context.Context, arg ExecuteGetByIDInput) (*userdomain.User, error) {
 	scope := "userapp.ExecuteGet"
+	reqID := middleware.GetReqID(ctx)
 
 	if err := arg.validate(u.validate); err != nil {
-		if arg.ReqID == "" {
-			arg.ReqID = "userapp.ExecuteCreate-Request"
-		}
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,
@@ -52,12 +48,11 @@ func (u *Usecase) ExecuteGet(ctx context.Context, arg ExecuteGetInput) (*userdom
 		return nil, err
 	}
 
-	response, err := u.repo.GetUser(ctx, userpostgres.GetUserInput{
-		ReqID:  arg.ReqID,
+	response, err := u.repo.GetUserByID(ctx, userpostgres.GetUserByIDInput{
 		UserID: arg.UserID,
 	})
 	if err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,

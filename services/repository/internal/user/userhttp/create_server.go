@@ -9,6 +9,7 @@ import (
 	"github.com/dositadi/cheffery/services/repository/internal/user/userapp"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,7 +17,7 @@ import (
 )
 
 func (s *Server) CreateUser(ctx context.Context, req *repository.CreateUserRequest) (*repository.CreateUserResponse, error) {
-	reqID := req.GetReqID()
+	reqID := middleware.GetReqID(ctx)
 	if reqID == "" {
 		reqID = fmt.Sprintf("create-user:%s", uuid.NewString())
 	}

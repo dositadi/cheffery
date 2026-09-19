@@ -7,6 +7,7 @@ import (
 
 	"github.com/dositadi/cheffery/services/repository/internal/store/sqlc"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
 )
 
@@ -15,8 +16,9 @@ type DeleteUserInput struct {
 	Version int32
 }
 
-func (r *Repository) DeleteUser(ctx context.Context, reqID string, arg DeleteUserInput) error {
+func (r *Repository) DeleteUser(ctx context.Context, arg DeleteUserInput) error {
 	scope := "userpostgres.DeleteUser"
+	reqID := middleware.GetReqID(ctx)
 
 	querier := sqlc.New(r.pgPool)
 	wait := r.retryCfg.MinWait

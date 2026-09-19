@@ -2,24 +2,20 @@ package jwtserver
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
 	"github.com/dositadi/cheffery/services/shared/customerror"
-	"github.com/google/uuid"
+	"github.com/go-chi/chi/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Server) TokenPairServer(ctx context.Context, req *auth.GenerateTokenPairRequest) (*auth.GenerateTokenPairResponse, error) {
-	reqId := req.GetRequestID()
-	if reqId == "" {
-		reqId = fmt.Sprintf("token-pair:%s", uuid.NewString())
-	}
+	reqId := middleware.GetReqID(ctx)
 	userId := req.GetUserID()
 	scope := "jwtserver.TokenPairServer"
 

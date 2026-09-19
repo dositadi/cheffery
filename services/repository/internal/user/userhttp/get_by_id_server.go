@@ -15,12 +15,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserRequest) (*repository.UpdateUserResponse, error) {
+func (s *Server) GetUserByID(ctx context.Context, req *repository.GetUserByIDRequest) (*repository.GetUserByIDResponse, error) {
 	reqID := middleware.GetReqID(ctx)
+	scope := "userhttp.GetUser"
 
-	scope := "userhttp.UpdateUser"
-
-	userId, err := uuid.Parse(req.GetId())
+	userID, err := uuid.Parse(req.GetUserID())
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
@@ -32,12 +31,8 @@ func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserReque
 		return nil, status.Error(codes.Unauthenticated, userdomain.ErrID.Error())
 	}
 
-	response, err := s.executor.ExecuteUpdate(ctx, userapp.ExecuteUpdateInput{
-		Name:        req.GetName(),
-		Email:       req.GetEmail(),
-		Password:    req.GetNewPassword(),
-		OldPassword: req.GetOldPassword(),
-		ID:          userId,
+	user, err := s.executor.ExecuteGetByID(ctx, userapp.ExecuteGetByIDInput{
+		UserID: userID,
 	})
 	if err != nil {
 		s.logger.PrintError(err, reqID, customerror.InternalError{
@@ -48,15 +43,6 @@ func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserReque
 			"Context": scope,
 		})
 
-		if errors.Is(err, userdomain.ErrName) || errors.Is(err, userdomain.ErrEmail) || errors.Is(err, userdomain.ErrPassword) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
-		}
-		if errors.Is(err, userdomain.ErrID) {
-			return nil, status.Error(codes.Unauthenticated, err.Error())
-		}
-		if errors.Is(err, userdomain.ErrEmailConflict) {
-			return nil, status.Error(codes.AlreadyExists, err.Error())
-		}
 		if errors.Is(err, userdomain.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
@@ -66,9 +52,12 @@ func (s *Server) UpdateUser(ctx context.Context, req *repository.UpdateUserReque
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &repository.UpdateUserResponse{
-		Datachanged: response.DataChanged,
-		Fields:      response.Fields,
-		Timestamp:   timestamppb.New(response.Timestamp),
+	return &repository.GetUserByIDResponse{
+		Id:        user.GetID().String(),
+		Name:      user.GetName(),
+		Email:     user.GetEmail(),
+		Version:   user.GetVersion(),
+		CreatedAt: timestamppb.New(user.GetCreatedAt()),
+		UpdatedAt: timestamppb.New(user.GetUpdatedAt()),
 	}, nil
 }

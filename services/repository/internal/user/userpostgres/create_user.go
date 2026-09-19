@@ -7,6 +7,7 @@ import (
 
 	"github.com/dositadi/cheffery/services/repository/internal/store/sqlc"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -22,8 +23,9 @@ type CreateUserOutput struct {
 	CreatedAt time.Time
 }
 
-func (r *Repository) CreateUser(ctx context.Context, reqId string, in CreateUserInput) (CreateUserOutput, error) {
+func (r *Repository) CreateUser(ctx context.Context, in CreateUserInput) (CreateUserOutput, error) {
 	scope := "userpostgres.CreateUser"
+	reqId := middleware.GetReqID(ctx)
 
 	querier := sqlc.New(r.pgPool)
 

@@ -55,13 +55,34 @@ func (q *Queries) DeleteUser(ctx context.Context, arg DeleteUserParams) error {
 	return err
 }
 
-const getUser = `-- name: GetUser :one
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, email, password_hash, created_at, updated_at, version, deleted_at FROM users
+WHERE email = $1 AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Version,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
 SELECT id, name, email, password_hash, created_at, updated_at, version, deleted_at FROM users
 WHERE id = $1 AND deleted_at IS NULL
 `
 
-func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
-	row := q.db.QueryRow(ctx, getUser, id)
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(
 		&i.ID,

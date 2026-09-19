@@ -9,34 +9,43 @@ import (
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5"
 )
 
-type UpdateUserInput struct {
+type GetUserByIDInput struct {
+	UserID uuid.UUID
+}
+
+type GetUserOutput struct {
+	ID           uuid.UUID
 	Name         string
 	Email        string
 	PasswordHash []byte
-	ID           uuid.UUID
+	Createdat    time.Time
+	Updatedat    time.Time
 	Version      int32
+	Deletedat    *time.Time
 }
 
-func (r *Repository) UpdateUser(ctx context.Context, arg UpdateUserInput) error {
-	scope := "userpostgres.UpdateUser"
+func (r *Repository) GetUserByID(ctx context.Context, arg GetUserByIDInput) (GetUserOutput, error) {
+	scope := "userpostgres.GetUser"
 	reqID := middleware.GetReqID(ctx)
 
 	querier := sqlc.New(r.pgPool)
+
 	wait := r.retryCfg.MinWait
 	var err error
+	var response sqlc.User
 
-updateUser:
+getUser:
 	for attempt := range r.retryCfg.MaxAttempt {
-		err = querier.UpdateUser(ctx, sqlc.UpdateUserParams(arg))
+		response, err = querier.GetUserByID(ctx, arg.UserID)
 		if err == nil {
-			break updateUser
+			break getUser
 		}
 
 		if !customerror.IsRetryableError(err) {
-			break updateUser
+			break getUser
 		}
 
 		customerror.LogAttempt(r.logger, err, reqID, attempt, scope)
@@ -52,7 +61,7 @@ updateUser:
 					"Context": scope,
 				})
 				err = ctx.Err()
-				break updateUser
+				break getUser
 			case <-time.After(wait):
 				wait *= 2
 				if wait > r.retryCfg.MaxWait {
@@ -70,19 +79,28 @@ updateUser:
 			"Context": scope,
 		})
 
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			switch pgErr.ConstraintName {
-			case "idx_email":
-				return ErrEmailConflict
-			}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return GetUserOutput{}, ErrNotFound
 		}
-
 		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-			return ErrRequestTimeout
+			return GetUserOutput{}, ErrRequestTimeout
 		}
-		return ErrInternal
+		return GetUserOutput{}, ErrInternal
 	}
 
-	return nil
+	var deletedAt *time.Time
+	if response.DeletedAt.Valid {
+		deletedAt = &response.DeletedAt.Time
+	}
+
+	return GetUserOutput{
+		ID:           response.ID,
+		Name:         response.Name,
+		Email:        response.Email,
+		PasswordHash: response.PasswordHash,
+		Createdat:    response.CreatedAt,
+		Updatedat:    response.UpdatedAt,
+		Version:      response.Version,
+		Deletedat:    deletedAt,
+	}, nil
 }

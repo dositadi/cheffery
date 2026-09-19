@@ -10,20 +10,19 @@ import (
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 )
 
-type ExecuteDeleteInput struct {
-	ID    uuid.UUID `validate:"required, uuid"`
+type ExecuteGetByEmailInput struct {
+	Email string `validate:"required, email"`
 }
 
-func (e ExecuteDeleteInput) validate(validate *validator.Validate) error {
+func (e ExecuteGetByEmailInput) validate(validate *validator.Validate) error {
 	if err := validate.Struct(e); err != nil {
 		var validateErrs validator.ValidationErrors
 		if errors.As(err, &validateErrs) {
 			for _, e := range validateErrs {
 				switch e.StructField() {
-				case "ID":
+				case "UserID":
 					return fmt.Errorf("%w: %s", userdomain.ErrID, e.Error())
 				}
 			}
@@ -33,8 +32,8 @@ func (e ExecuteDeleteInput) validate(validate *validator.Validate) error {
 	return nil
 }
 
-func (u *Usecase) ExecuteDelete(ctx context.Context, arg ExecuteDeleteInput) error {
-	scope := "userapp.ExecuteDelete"
+func (u *Usecase) ExecuteGetByEmail(ctx context.Context, arg ExecuteGetByEmailInput) (*userdomain.User, error) {
+	scope := "userapp.ExecuteGet"
 	reqID := middleware.GetReqID(ctx)
 
 	if err := arg.validate(u.validate); err != nil {
@@ -45,11 +44,11 @@ func (u *Usecase) ExecuteDelete(ctx context.Context, arg ExecuteDeleteInput) err
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return err
+		return nil, err
 	}
 
-	user, err := u.ExecuteGetByID(ctx, ExecuteGetByIDInput{
-		UserID: arg.ID,
+	response, err := u.repo.GetUserByEmail(ctx, userpostgres.GetUserByEmailInput{
+		Email: arg.Email,
 	})
 	if err != nil {
 		u.logger.PrintError(err, reqID, customerror.InternalError{
@@ -59,25 +58,19 @@ func (u *Usecase) ExecuteDelete(ctx context.Context, arg ExecuteDeleteInput) err
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return err
-	}
-
-	if err := u.repo.DeleteUser(ctx, userpostgres.DeleteUserInput{
-		ID:      arg.ID,
-		Version: user.GetVersion(),
-	}); err != nil {
-		u.logger.PrintError(err, reqID, customerror.InternalError{
-			Inner:   err,
-			Message: err.Error(),
-			Misc:    nil,
-		}.Error(), map[string]string{
-			"Context": scope,
-		})
-
-		if errors.Is(err, userpostgres.ErrRequestTimeout) {
-			return userdomain.ErrTimeout
+		if errors.Is(err, userpostgres.ErrNotFound) {
+			return nil, userdomain.ErrNotFound
 		}
-		return userdomain.ErrInternal
+		if errors.Is(err, userpostgres.ErrRequestTimeout) {
+			return nil, userdomain.ErrTimeout
+		}
+		return nil, userdomain.ErrInternal
 	}
-	return nil
+
+	user, err := userdomain.New(response.ID, response.Name, response.Email, response.PasswordHash, response.Version, response.Createdat, response.Updatedat)
+	if err != nil {
+		return nil, userdomain.ErrInternal
+	}
+
+	return user, nil
 }
