@@ -3,6 +3,7 @@ package userhttp
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userapp"
@@ -13,10 +14,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) DeleteServer(ctx context.Context, req *repository.DeleteUserRequest) (*repository.DeleteUserResponse, error) {
+func (s *Server) DeleteUser(ctx context.Context, req *repository.DeleteUserRequest) (*repository.DeleteUserResponse, error) {
 	reqID := req.GetReqID()
 	if reqID == "" {
-		reqID = uuid.NewString()
+		reqID = fmt.Sprintf("delete-user:%s", uuid.NewString())
 	}
 	scope := "userhttp.DeleteServer"
 
@@ -54,6 +55,6 @@ func (s *Server) DeleteServer(ctx context.Context, req *repository.DeleteUserReq
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	
+
 	return &repository.DeleteUserResponse{}, nil
 }

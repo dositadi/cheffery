@@ -3,17 +3,22 @@ package jwtserver
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) ValidateRefreshTokenServer(ctx context.Context, req *auth.ValidateRefreshTokenRequest) (*auth.ValidateRefreshTokenResponse, error) {
 	reqId := req.GetRequestID()
+	if reqId == "" {
+		reqId = fmt.Sprintf("validate-refresh:%s", uuid.NewString())
+	}
 	token := req.GetRefreshToken()
 	scope := "jwtserver.ValidateRefreshTokenServer"
 

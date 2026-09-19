@@ -3,18 +3,23 @@ package jwtserver
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) LogoutHandler(ctx context.Context, req *auth.LogoutRequest) (*auth.LogoutResponse, error) {
 	reqId := req.GetRequestID()
+	if reqId == "" {
+		reqId = fmt.Sprintf("logout:%s",uuid.NewString())
+	}
 	accessToken := req.GetAccessToken()
 	scope := "jwtserver.LogoutHandler"
 

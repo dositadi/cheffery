@@ -3,6 +3,7 @@ package userhttp
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userapp"
@@ -17,7 +18,7 @@ import (
 func (s *Server) GetUser(ctx context.Context, req *repository.GetUserRequest) (*repository.GetUserResponse, error) {
 	reqID := req.GetReqID()
 	if reqID == "" {
-		reqID = uuid.NewString()
+		reqID = fmt.Sprintf("get-user:%s", uuid.NewString())
 	}
 	scope := "userhttp.GetUser"
 
