@@ -71,6 +71,9 @@ func (a *App) startServer() {
 	signal.Notify(chSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
+		a.logger.PrintInfo(reqId, fmt.Sprintln("Auth service running at http://0.0.0.0:%s", a.cfg.ServerPort), map[string]string{
+			"Context": scope,
+		})
 		if err := grpcServer.Serve(listener); err != nil {
 			chErr <- err
 		}
@@ -93,7 +96,15 @@ func (a *App) startServer() {
 	})
 
 	grpcServer.GracefulStop()
-	a.redis.Client.Close()
+	if err := a.redis.Client.Close(); err != nil {
+		a.logger.PrintError(err, reqId, customerror.InternalError{
+			Inner:   err,
+			Message: err.Error(),
+			Misc:    nil,
+		}.Error(), map[string]string{
+			"Context": scope,
+		})
+	}
 }
 
 func (a *App) Run() {

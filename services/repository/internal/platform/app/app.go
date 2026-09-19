@@ -79,6 +79,9 @@ func (a *App) StartServer() {
 	chErr := make(chan error)
 
 	go func() {
+		a.logger.PrintInfo(reqID, fmt.Sprintln("Auth service running at http://0.0.0.0:%s", a.cfg.ServerPort), map[string]string{
+			"Context": scope,
+		})
 		if err := grpcServer.Serve(listener); err != nil {
 			chErr <- err
 		}

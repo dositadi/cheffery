@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -9,8 +10,11 @@ import (
 	"github.com/dositadi/cheffery/services/shared/customerror"
 )
 
+// start server
 func (a *App) startServer() {
 	scope := "app.startServer"
+	reqID := "server-start"
+	
 	for _, conn := range a.conns {
 		defer func() {
 			if err := conn.Close(); err != nil {
@@ -39,6 +43,9 @@ func (a *App) startServer() {
 	chErr := make(chan error)
 
 	go func() {
+		a.logger.PrintInfo(reqID, fmt.Sprintln("Server running at http://%s", toAddr(a.cfg.Server.Host, a.cfg.Server.Port)), map[string]string{
+			"Context": scope,
+		})
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			chErr <- err
 		}
