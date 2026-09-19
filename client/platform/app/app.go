@@ -8,6 +8,7 @@ import (
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/shared/logger"
 	"github.com/go-chi/chi/v5"
+	"google.golang.org/grpc"
 )
 
 type App struct {
@@ -16,17 +17,30 @@ type App struct {
 	logger     logger.Logger
 	authClient auth.IssuerClient
 	repoClient repository.RepositoryClient
+	conns      []*grpc.ClientConn
 }
 
 func New() *App {
 	app := &App{
-		cfg:    config.LoadAppConfig(),
 		logger: logger.New(os.Stdout),
 	}
 
-	app.authClient = auth.NewIssuerClient(establishConn(app.logger, ""))
-	app.repoClient = repository.NewRepositoryClient(establishConn(app.logger, ""))
+	app.cfg = config.LoadAppConfig(app.logger)
+	authConn := establishConn(app.logger, toAddr(app.cfg.Service.AuthHost, app.cfg.Service.AuthPort))
+	app.authClient = auth.NewIssuerClient(authConn)
+
+	repoConn := establishConn(app.logger, toAddr(app.cfg.Service.RepoHost, app.cfg.Service.RepoPort))
+	app.repoClient = repository.NewRepositoryClient(repoConn)
 	app.router = chi.NewRouter()
 
+	app.conns = append(app.conns, authConn, repoConn)
+
 	return app
+}
+
+func (a *App) startServer() {
+	//During graceful shutdown
+	for _, conn := range a.conns {
+		conn.Close()
+	}
 }

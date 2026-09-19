@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/dositadi/cheffery/services/shared/logger"
 	"google.golang.org/grpc"
@@ -23,4 +25,8 @@ func establishConn(logger logger.Logger, addr string) *grpc.ClientConn {
 	}
 
 	return conn
+}
+
+func toAddr(host string, port uint16) string {
+	return fmt.Sprintf("%s:%v", host, port)
 }
