@@ -19,8 +19,7 @@ type ExecuteGetByIDInput struct {
 
 func (e ExecuteGetByIDInput) validate(validate *validator.Validate) error {
 	if err := validate.Struct(e); err != nil {
-		var validateErrs validator.ValidationErrors
-		if errors.As(err, &validateErrs) {
+		if validateErrs, ok := errors.AsType[validator.ValidationErrors](err); ok {
 			for _, e := range validateErrs {
 				switch e.StructField() {
 				case "UserID":

@@ -44,3 +44,7 @@ func NewTokenPair(accessToken string, refreshToken string, expiresAt time.Time, 
 	}
 	return pair, nil
 }
+
+func (t TokenPair) GetAccessToken() string  { return t.accessToken }
+func (t TokenPair) GetRefreshToken() string { return t.refreshToken }
+func (t TokenPair) GetExpiresAt() time.Time { return t.expiresAt }

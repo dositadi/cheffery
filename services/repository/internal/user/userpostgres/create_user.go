@@ -74,8 +74,7 @@ createUser:
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 			switch pgErr.ConstraintName {
 			case "idx_email":
 				return CreateUserOutput{}, ErrEmailConflict

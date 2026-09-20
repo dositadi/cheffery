@@ -34,13 +34,11 @@ func IsRetryableError(err error) bool {
 		return false
 	}
 
-	var netErr net.Error
-	if errors.As(err, &netErr) {
+	if netErr, ok := errors.AsType[net.Error](err); ok {
 		return netErr.Timeout()
 	}
 
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
+	if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 		switch pgErr.Code {
 		case pgerrcode.SerializationFailure, pgerrcode.DeadlockDetected, pgerrcode.CannotConnectNow:
 			return true

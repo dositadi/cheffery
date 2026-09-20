@@ -117,5 +117,6 @@ func (u *Usecase) Login(ctx context.Context, arg LoginInput) (*authdomain.TokenP
 		return nil, authdomain.ErrInternal
 	}
 
+
 	return out, nil
 }

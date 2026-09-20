@@ -15,16 +15,14 @@ func (u *Usecase) executeGenerateRefreshToken(ctx context.Context, reqId, userId
 	scope := "jwtapp.ExecuteGenerateAccessToken()"
 
 	claim := jwtdomain.JWTRefreshClaim{
-		UserID: userId,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    jwtdomain.Issuer.String(),
-			Subject:   userId,
-			Audience:  jwt.ClaimStrings{"cheffery:user", "cheffery:app"},
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(u.cfg.AccessTTL)),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ID:        tokenId,
-		},
+		UserID:    userId,
+		Issuer:    jwtdomain.Issuer.String(),
+		Subject:   userId,
+		Audience:  jwt.ClaimStrings{"cheffery:user", "cheffery:app"},
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(u.cfg.AccessTTL)),
+		NotBefore: jwt.NewNumericDate(time.Now()),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		ID:        tokenId,
 	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString([]byte(u.cfg.AccessKey))

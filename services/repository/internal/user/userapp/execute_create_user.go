@@ -22,9 +22,8 @@ type ExecuteCreateInput struct {
 
 func (e ExecuteCreateInput) validate(validate *validator.Validate) error {
 	if err := validate.Struct(e); err != nil {
-		var validationErrs validator.ValidationErrors
 
-		if errors.As(err, &validationErrs) {
+		if validationErrs, ok := errors.AsType[validator.ValidationErrors](err); ok {
 			for _, e := range validationErrs {
 				switch e.StructField() {
 				case "Name":

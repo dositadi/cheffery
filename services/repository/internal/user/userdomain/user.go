@@ -24,8 +24,7 @@ func (u *User) validate() error {
 	validate = validator.New(validator.WithRequiredStructEnabled(), validator.WithPrivateFieldValidation())
 
 	if err := validate.Struct(u); err != nil {
-		var validateErrs validator.ValidationErrors
-		if errors.As(err, &validateErrs) {
+		if validateErrs, ok := errors.AsType[validator.ValidationErrors](err); ok {
 			for _, e := range validateErrs {
 				switch e.StructField() {
 				case "id":

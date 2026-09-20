@@ -14,13 +14,12 @@ import (
 )
 
 type ExecuteDeleteInput struct {
-	ID    uuid.UUID `validate:"required, uuid"`
+	ID uuid.UUID `validate:"required, uuid"`
 }
 
 func (e ExecuteDeleteInput) validate(validate *validator.Validate) error {
 	if err := validate.Struct(e); err != nil {
-		var validateErrs validator.ValidationErrors
-		if errors.As(err, &validateErrs) {
+		if validateErrs, ok := errors.AsType[validator.ValidationErrors](err); ok {
 			for _, e := range validateErrs {
 				switch e.StructField() {
 				case "ID":
