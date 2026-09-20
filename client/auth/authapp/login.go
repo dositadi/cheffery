@@ -21,8 +21,7 @@ type LoginInput struct {
 
 func (l LoginInput) validate(v *validator.Validate) error {
 	if err := v.Struct(l); err != nil {
-		var vErrs validator.ValidationErrors
-		if errors.As(err, &vErrs) {
+		if vErrs, ok := errors.AsType[validator.ValidationErrors](err); ok {
 			for _, e := range vErrs {
 				switch e.StructField() {
 				case "Email":
