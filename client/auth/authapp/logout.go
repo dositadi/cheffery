@@ -6,17 +6,18 @@ import (
 	"github.com/dositadi/cheffery/client/auth/authdomain"
 	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/dositadi/cheffery/sharedkernel"
 	"github.com/go-chi/chi/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (u *Usecase) Logout(ctx context.Context, accessToken string) error {
+func (u *Usecase) Logout(ctx context.Context, accessToken sharedkernel.JWT) error {
 	scope := "authapp.Logout"
 	reqID := middleware.GetReqID(ctx)
 
 	_, err := u.authService.Logout(ctx, &auth.LogoutRequest{
-		AccessToken: accessToken,
+		AccessToken: accessToken.String(),
 	})
 	if err != nil {
 		u.logger.PrintError(err, reqID, customerror.InternalError{
@@ -37,6 +38,8 @@ func (u *Usecase) Logout(ctx context.Context, accessToken string) error {
 			return authdomain.ErrUnauthorized
 		case codes.Internal:
 			return authdomain.ErrInternal
+		case codes.DeadlineExceeded:
+			return authdomain.ErrTimeout
 		}
 		return authdomain.ErrInternal
 	}

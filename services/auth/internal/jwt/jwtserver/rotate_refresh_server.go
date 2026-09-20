@@ -31,6 +31,9 @@ func (s *Server) RotateRefreshTokenServer(ctx context.Context, req *auth.RotateR
 			"Context": scope,
 		})
 
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return nil, status.Error(codes.DeadlineExceeded, jwtdomain.ErrTimeout.Error())
+		}
 		if errors.Is(err, jwtdomain.ErrInternal) {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
