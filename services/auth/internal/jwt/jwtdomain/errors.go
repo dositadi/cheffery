@@ -9,4 +9,5 @@ var (
 	ErrInvalidTokenType = errors.New("jwtdomain: invalid token type")
 	ErrInternal         = errors.New("jwtdomain: something wrong happened.")
 	ErrTokenBlacklisted = errors.New("jwtdomain: token blacklisted")
+	ErrTimeout          = errors.New("jwtdomain: timeout")
 )

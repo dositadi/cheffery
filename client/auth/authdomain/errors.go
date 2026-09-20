@@ -15,6 +15,12 @@ var (
 )
 
 var (
-	ErrEmail = errors.New("authdomain: invalid email")
+	ErrEmail    = errors.New("authdomain: invalid email")
 	ErrPassword = errors.New("authdomain: email should be at least 8 chars long")
+)
+
+var (
+	ErrNotFound     = errors.New("authdomain: not found")
+	ErrUnauthorized = errors.New("authdomain: unauthorized")
+	ErrTimeout      = errors.New("authdomain: timeout")
 )

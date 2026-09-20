@@ -2,11 +2,13 @@ package jwtserver
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	gen "github.com/dositadi/cheffery/protoc_gen/protoc/auth"
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtapp"
+	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-chi/chi/middleware"
 	"google.golang.org/grpc/codes"
@@ -31,6 +33,9 @@ func (s *Server) TokenPairServer(ctx context.Context, req *auth.GenerateTokenPai
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return nil, status.Error(codes.DeadlineExceeded, jwtdomain.ErrTimeout.Error())
+		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 

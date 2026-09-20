@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dositadi/cheffery/globalutil/bcrypt/bcryptapp"
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
-	"github.com/dositadi/cheffery/services/repository/internal/bcrypt/bcryptapp"
 	"github.com/dositadi/cheffery/services/repository/internal/config"
 	"github.com/dositadi/cheffery/services/repository/internal/platform/postgres"
 	"github.com/dositadi/cheffery/services/repository/internal/user/userapp"

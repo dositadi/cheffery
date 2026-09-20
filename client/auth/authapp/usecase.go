@@ -12,13 +12,15 @@ type Usecase struct {
 	validate    *validator.Validate
 	authService auth.IssuerClient
 	repoService repository.RepositoryClient
+	bcrypt      Bcrypt
 }
 
-func New(authService auth.IssuerClient, repoService repository.RepositoryClient, validate *validator.Validate, logger logger.Logger) *Usecase {
+func New(authService auth.IssuerClient, repoService repository.RepositoryClient, validate *validator.Validate, bcrypt Bcrypt, logger logger.Logger) *Usecase {
 	return &Usecase{
 		logger:      logger,
 		validate:    validate,
 		authService: authService,
 		repoService: repoService,
+		bcrypt:      bcrypt,
 	}
 }

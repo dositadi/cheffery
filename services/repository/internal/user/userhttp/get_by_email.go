@@ -40,11 +40,12 @@ func (s *Server) GetUserByEmail(ctx context.Context, req *repository.GetUserByEm
 	}
 
 	return &repository.GetUserByEmailResponse{
-		Id:        user.GetID().String(),
-		Name:      user.GetName(),
-		Email:     user.GetEmail(),
-		Version:   user.GetVersion(),
-		CreatedAt: timestamppb.New(user.GetCreatedAt()),
-		UpdatedAt: timestamppb.New(user.GetUpdatedAt()),
+		Id:           user.GetID().String(),
+		Name:         user.GetName(),
+		Email:        user.GetEmail(),
+		PasswordHash: user.GetPasswordHash(),
+		Version:      user.GetVersion(),
+		CreatedAt:    timestamppb.New(user.GetCreatedAt()),
+		UpdatedAt:    timestamppb.New(user.GetUpdatedAt()),
 	}, nil
 }
