@@ -9,6 +9,7 @@ import (
 	"github.com/dositadi/cheffery/services/repository/internal/config"
 	"github.com/dositadi/cheffery/services/shared/logger"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -29,12 +30,14 @@ func New(logger logger.Logger, cfg *config.PostgresEnv, retryCfg *config.RetryCo
 func (p *Postgres) InitDB(ctx context.Context) (*pgxpool.Pool, *Metrics) {
 	scope := "postgres.InitDB"
 	connConfig := &pgx.ConnConfig{
-		Host:           p.pgCfg.Host,
-		Port:           p.pgCfg.Port,
-		Database:       p.pgCfg.Database,
-		User:           p.pgCfg.Username,
-		Password:       p.pgCfg.Password,
-		ConnectTimeout: p.pgCfg.ConnTimeout,
+		Config: pgconn.Config{
+			Host:           p.pgCfg.Host,
+			Port:           p.pgCfg.Port,
+			Database:       p.pgCfg.Database,
+			User:           p.pgCfg.Username,
+			Password:       p.pgCfg.Password,
+			ConnectTimeout: p.pgCfg.ConnTimeout,
+		},
 	}
 
 	cfg := &pgxpool.Config{

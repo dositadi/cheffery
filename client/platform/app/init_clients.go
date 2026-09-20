@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// Establish a conn with a grpc server
 func establishConn(logger logger.Logger, addr string) *grpc.ClientConn {
 	reqID := "establish-connection"
 	scope := "app.initAuthClient"

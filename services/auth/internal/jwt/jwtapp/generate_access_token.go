@@ -29,13 +29,15 @@ func (u *Usecase) executeGenerateAccessToken(ctx context.Context, reqId string, 
 	claim := jwtdomain.JWTAccessClaim{
 		UserID:       userId,
 		TokenVersion: version,
-		Issuer:       jwtdomain.Issuer.String(),
-		Subject:      userId,
-		Audience:     jwt.ClaimStrings{"cheffery:user", "cheffery:app"},
-		ExpiresAt:    jwt.NewNumericDate(time.Now().Add(u.cfg.AccessTTL)),
-		NotBefore:    jwt.NewNumericDate(time.Now()),
-		IssuedAt:     jwt.NewNumericDate(time.Now()),
-		ID:           tokenId,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    jwtdomain.Issuer.String(),
+			Subject:   userId,
+			Audience:  jwt.ClaimStrings{"cheffery:user", "cheffery:app"},
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(u.cfg.AccessTTL)),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ID:        tokenId,
+		},
 	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString([]byte(u.cfg.AccessKey))

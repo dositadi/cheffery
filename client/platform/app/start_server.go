@@ -14,9 +14,9 @@ import (
 func (a *App) startServer() {
 	scope := "app.startServer"
 	reqID := "server-start"
-	
-	for _, conn := range a.conns {
-		defer func() {
+
+	defer func() {
+		for _, conn := range a.conns {
 			if err := conn.Close(); err != nil {
 				a.logger.PrintError(err, "close-grpc-conn", customerror.InternalError{
 					Inner:   err,
@@ -26,8 +26,8 @@ func (a *App) startServer() {
 					"Context": scope,
 				})
 			}
-		}()
-	}
+		}
+	}()
 
 	server := http.Server{
 		Addr:           toAddr(a.cfg.Server.Host, a.cfg.Server.Port),
@@ -53,14 +53,13 @@ func (a *App) startServer() {
 
 	select {
 	case e := <-chErr:
-		a.logger.PrintError(e, "server-start", customerror.InternalError{
+		a.logger.PrintFatal(e, "server-start", customerror.InternalError{
 			Inner:   e,
 			Message: e.Error(),
 			Misc:    nil,
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return
 	case <-chSignal:
 		// fall through
 	}
