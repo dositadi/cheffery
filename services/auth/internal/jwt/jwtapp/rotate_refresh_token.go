@@ -50,7 +50,6 @@ func (u *Usecase) ExecuteRotateRefreshToken(ctx context.Context, arg ExecuteRota
 
 	tokenPair, err := u.ExecuteGenerateTokenPair(ctx, ExecuteGenerateTokenPairInput{
 		UserID: claim.Subject,
-		ReqID:  reqID,
 	})
 	if err != nil {
 		u.logger.PrintError(err, reqID, customerror.InternalError{

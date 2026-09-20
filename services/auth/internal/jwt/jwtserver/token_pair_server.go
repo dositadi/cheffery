@@ -23,7 +23,6 @@ func (s *Server) TokenPairServer(ctx context.Context, req *auth.GenerateTokenPai
 
 	response, err := s.port.ExecuteGenerateTokenPair(ctx, jwtapp.ExecuteGenerateTokenPairInput{
 		UserID: userId,
-		ReqID:  reqId,
 	})
 	if err != nil {
 		s.logger.PrintError(err, reqId, customerror.InternalError{

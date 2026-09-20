@@ -4,14 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/go-chi/chi/middleware"
 )
 
 type ExecuteGenerateTokenPairInput struct {
 	UserID string
-	ReqID  string
 }
 
 type ExecuteGenerateTokenPairOutput struct {
@@ -22,29 +21,41 @@ type ExecuteGenerateTokenPairOutput struct {
 
 func (u *Usecase) ExecuteGenerateTokenPair(ctx context.Context, arg ExecuteGenerateTokenPairInput) (ExecuteGenerateTokenPairOutput, error) {
 	scope := "jwtapp.ExecuteGenerateTokenPair"
+	reqID := middleware.GetReqID(ctx)
 
-	accessToken, err := u.executeGenerateAccessToken(ctx, arg.ReqID, arg.UserID)
-	if err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+	if err := u.store.IncrementTokenVersion(ctx, reqID, arg.UserID); err != nil {
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return ExecuteGenerateTokenPairOutput{}, status.Error(codes.Internal, err.Error())
+		return ExecuteGenerateTokenPairOutput{}, jwtdomain.ErrInternal
 	}
 
-	refreshToken, err := u.executeGenerateRefreshToken(ctx, arg.ReqID, arg.UserID)
+	accessToken, err := u.executeGenerateAccessToken(ctx, reqID, arg.UserID)
 	if err != nil {
-		u.logger.PrintError(err, arg.ReqID, customerror.InternalError{
+		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
 			Misc:    nil,
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		return ExecuteGenerateTokenPairOutput{}, status.Error(codes.Internal, err.Error())
+		return ExecuteGenerateTokenPairOutput{}, jwtdomain.ErrInternal
+	}
+
+	refreshToken, err := u.executeGenerateRefreshToken(ctx, reqID, arg.UserID)
+	if err != nil {
+		u.logger.PrintError(err, reqID, customerror.InternalError{
+			Inner:   err,
+			Message: err.Error(),
+			Misc:    nil,
+		}.Error(), map[string]string{
+			"Context": scope,
+		})
+		return ExecuteGenerateTokenPairOutput{}, jwtdomain.ErrInternal
 	}
 
 	return ExecuteGenerateTokenPairOutput{
