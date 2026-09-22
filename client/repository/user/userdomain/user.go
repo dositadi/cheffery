@@ -3,9 +3,10 @@ package userdomain
 import (
 	"errors"
 	"time"
+	"uuid"
 
+	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 )
 
 type User struct {
@@ -28,21 +29,21 @@ func (u *User) validate() error {
 			for _, e := range validateErrs {
 				switch e.StructField() {
 				case "id":
-					return ErrID
+					return customerror.WrapValidateErr(ErrID, e.Error())
 				case "name":
-					return ErrName
+					return customerror.WrapValidateErr(ErrName, e.Error())
 				case "email":
-					return ErrEmail
+					return customerror.WrapValidateErr(ErrEmail, e.Error())
 				case "password":
-					return ErrPassword
+					return customerror.WrapValidateErr(ErrPassword, e.Error())
 				case "version":
-					return ErrVersion
+					return customerror.WrapValidateErr(ErrVersion, e.Error())
 				case "createdAt":
-					return ErrCreatedAt
+					return customerror.WrapValidateErr(ErrDomain, e.Error())
 				}
 			}
 		}
-		return ErrInternal
+		return customerror.WrapValidateErr(ErrInternal, err.Error())
 	}
 	return nil
 }
@@ -72,11 +73,3 @@ func (u User) GetPasswordHash() []byte { return u.passwordHash }
 func (u User) GetVersion() int32       { return u.version }
 func (u User) GetCreatedAt() time.Time { return u.createdAt }
 func (u User) GetUpdatedAt() time.Time { return u.updatedAt }
-
-func (u *User) SetName(name string)                 { u.name = name }
-func (u *User) SetEmail(email string)               { u.email = email }
-func (u *User) SetPasswordHash(passwordHash []byte) { u.passwordHash = passwordHash }
-
-type CompareFunc func(hashedPassword, password []byte) error
-
-func (u User) Compare(password []byte, fn CompareFunc) error { return fn(u.passwordHash, password) }

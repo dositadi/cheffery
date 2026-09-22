@@ -15,7 +15,7 @@ const (
 	v1 = 1
 )
 
-func (a *App) initHandlers() {
+func (a *App) mountHandlers() {
 	mw := m.NewPlatformMW(a.logger, a.authClient)
 
 	// Set up global middlewares.
@@ -32,7 +32,7 @@ func (a *App) initHandlers() {
 		BacklogTimeout: a.cfg.Server.WriteTimeout,
 	}))
 
-	a.router.Mount(fmt.Sprintf("/v%v", v1), a.router.Group(func(r chi.Router) {
+	a.router.Mount(fmt.Sprintf("/cheffery/v%v", v1), a.router.Group(func(r chi.Router) {
 		// Mount all domain handlers here
 	}))
 }
