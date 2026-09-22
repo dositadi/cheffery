@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -28,21 +29,21 @@ func (u *User) validate() error {
 			for _, e := range validateErrs {
 				switch e.StructField() {
 				case "id":
-					return ErrID
+					return customerror.WrapValidateErr(ErrID, e.Error())
 				case "name":
-					return ErrName
+					return customerror.WrapValidateErr(ErrName, e.Error())
 				case "email":
-					return ErrEmail
+					return customerror.WrapValidateErr(ErrEmail, e.Error())
 				case "password":
-					return ErrPassword
+					return customerror.WrapValidateErr(ErrPassword, e.Error())
 				case "version":
-					return ErrVersion
+					return customerror.WrapValidateErr(ErrVersion, e.Error())
 				case "createdAt":
-					return ErrCreatedAt
+					return customerror.WrapValidateErr(ErrCreatedAt, e.Error())
 				}
 			}
 		}
-		return ErrInternal
+		return customerror.WrapValidateErr(ErrInternal, err.Error())
 	}
 	return nil
 }

@@ -5,12 +5,14 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dositadi/cheffery/services/repository/internal/user/userdomain"
-	"github.com/dositadi/cheffery/services/repository/internal/user/userpostgres"
+	"github.com/dositadi/cheffery/client/repository/user/userdomain"
+	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type ExecuteCreateInput struct {
@@ -51,9 +53,6 @@ func (u *Usecase) ExecuteCreate(ctx context.Context, arg ExecuteCreateInput) (Ex
 	reqID := middleware.GetReqID(ctx)
 
 	if err := arg.validate(u.validate); err != nil {
-		if reqID == "" {
-			reqID = "userapp.ExecuteCreate-Request"
-		}
 		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
 			Message: err.Error(),
@@ -64,22 +63,10 @@ func (u *Usecase) ExecuteCreate(ctx context.Context, arg ExecuteCreateInput) (Ex
 		return ExecuteCreateOutput{}, err
 	}
 
-	hashedPassword, err := u.bcrypt.GenerateHash([]byte(arg.Password))
-	if err != nil {
-		u.logger.PrintError(err, reqID, customerror.InternalError{
-			Inner:   err,
-			Message: err.Error(),
-			Misc:    nil,
-		}.Error(), map[string]string{
-			"Context": scope,
-		})
-		return ExecuteCreateOutput{}, userdomain.ErrInternal
-	}
-
-	response, err := u.repo.CreateUser(ctx, userpostgres.CreateUserInput{
-		Name:         arg.Name,
-		Email:        arg.Email,
-		PasswordHash: hashedPassword,
+	response, err := u.repoClient.CreateUser(ctx, &repository.CreateUserRequest{
+		Name:     arg.Name,
+		Email:    arg.Email,
+		Password: arg.Password,
 	})
 	if err != nil {
 		u.logger.PrintError(err, reqID, customerror.InternalError{
@@ -89,14 +76,46 @@ func (u *Usecase) ExecuteCreate(ctx context.Context, arg ExecuteCreateInput) (Ex
 		}.Error(), map[string]string{
 			"Context": scope,
 		})
-		if errors.Is(err, userpostgres.ErrEmailConflict) {
-			return ExecuteCreateOutput{}, userdomain.ErrEmailConflict
+
+		err, ok := status.FromError(err)
+		if !ok {
+			return ExecuteCreateOutput{}, userdomain.ErrInternal
 		}
-		if errors.Is(err, userpostgres.ErrRequestTimeout) {
+
+		switch err.Code() {
+		case codes.InvalidArgument:
+			return ExecuteCreateOutput{}, customerror.WrapValidateErr(userdomain.ErrBadRequest, err.String())
+		case codes.Unauthenticated:
+			return ExecuteCreateOutput{}, userdomain.ErrUnauthorized
+		case codes.AlreadyExists:
+			return ExecuteCreateOutput{}, userdomain.ErrEmailConflict
+		case codes.DeadlineExceeded:
 			return ExecuteCreateOutput{}, userdomain.ErrTimeout
+		case codes.Internal:
+			return ExecuteCreateOutput{}, userdomain.ErrInternal
 		}
 		return ExecuteCreateOutput{}, userdomain.ErrInternal
 	}
 
-	return ExecuteCreateOutput(response), nil
+	id, err := uuid.Parse(response.GetId())
+	if err != nil {
+		u.logger.PrintError(err, reqID, customerror.InternalError{
+			Inner:   err,
+			Message: err.Error(),
+			Misc:    nil,
+		}.Error(), map[string]string{
+			"Context": scope,
+		})
+		return ExecuteCreateOutput{}, userdomain.ErrInternal
+	}
+
+	u.logger.PrintInfo(reqID, "Created a new user", map[string]string{
+		"Context": scope,
+		"ID":      id.String(),
+	})
+
+	return ExecuteCreateOutput{
+		ID:        id,
+		CreatedAt: response.GetCreatedAt().AsTime(),
+	}, nil
 }

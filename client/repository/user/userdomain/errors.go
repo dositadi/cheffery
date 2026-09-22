@@ -13,3 +13,10 @@ var (
 	ErrDomain   = errors.New("userdomain: ")
 	ErrInternal = errors.New("userdomain: somethingwent wrong")
 )
+
+var (
+	ErrBadRequest    = errors.New("userdomain: bad request")
+	ErrUnauthorized  = errors.New("userdomain: unauthorized, invalid credentials")
+	ErrEmailConflict = errors.New("userdomain: email conflict")
+	ErrTimeout       = errors.New("userdomain: timeout")
+)
