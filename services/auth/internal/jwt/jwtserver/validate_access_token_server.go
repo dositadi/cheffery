@@ -18,7 +18,7 @@ func (s *Server) ValidateAccessTokenServer(ctx context.Context, req *auth.Valida
 	token := req.GetAccessToken()
 	scope := "jwtserver.ValidateAccessTokenServer"
 
-	claim, err := s.port.ExecuteValidateAccessToken(ctx, reqId, token)
+	claim, err := s.port.ExecuteValidateAccessToken(ctx, token)
 	if err != nil {
 		s.logger.PrintError(err, reqId, customerror.InternalError{
 			Inner:   err,

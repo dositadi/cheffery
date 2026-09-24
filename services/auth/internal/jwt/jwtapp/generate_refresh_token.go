@@ -6,13 +6,15 @@ import (
 
 	"github.com/dositadi/cheffery/services/auth/internal/jwt/jwtdomain"
 	"github.com/dositadi/cheffery/services/shared/customerror"
+	"github.com/go-chi/chi/middleware"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
-func (u *Usecase) executeGenerateRefreshToken(ctx context.Context, reqId, userId string) (string, error) {
+func (u *Usecase) executeGenerateRefreshToken(ctx context.Context,userId string) (string, error) {
 	tokenId := uuid.NewString()
 	scope := "jwtapp.ExecuteGenerateAccessToken()"
+	reqId := middleware.GetReqID(ctx)
 
 	claim := jwtdomain.JWTRefreshClaim{
 		UserID: userId,

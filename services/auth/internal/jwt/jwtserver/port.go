@@ -9,7 +9,7 @@ import (
 
 type Executor interface {
 	ExecuteGenerateTokenPair(ctx context.Context, arg jwtapp.ExecuteGenerateTokenPairInput) (jwtapp.ExecuteGenerateTokenPairOutput, error)
-	ExecuteValidateAccessToken(ctx context.Context, reqId, tokenString string) (*jwtdomain.JWTAccessClaim, error)
+	ExecuteValidateAccessToken(ctx context.Context, tokenString string) (*jwtdomain.JWTAccessClaim, error)
 	ExecuteValidateRefreshToken(ctx context.Context, refreshToken string) (*jwtdomain.JWTRefreshClaim, error)
 	ExecuteLogout(ctx context.Context, arg jwtapp.ExecuteLogoutInput) (string, error)
 	ExecuteRotateRefreshToken(ctx context.Context, arg jwtapp.ExecuteRotateRefreshTokenInput) (jwtapp.ExecuteRotateRefreshTokenOutput, error)

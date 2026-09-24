@@ -20,7 +20,6 @@ func (s *Server) LogoutHandler(ctx context.Context, req *auth.LogoutRequest) (*a
 	scope := "jwtserver.LogoutHandler"
 
 	userID, err := s.port.ExecuteLogout(ctx, jwtapp.ExecuteLogoutInput{
-		ReqID:       reqId,
 		AccessToken: accessToken,
 	})
 	if err != nil {

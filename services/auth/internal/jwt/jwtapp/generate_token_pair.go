@@ -34,7 +34,7 @@ func (u *Usecase) ExecuteGenerateTokenPair(ctx context.Context, arg ExecuteGener
 		return ExecuteGenerateTokenPairOutput{}, jwtdomain.ErrInternal
 	}
 
-	accessToken, err := u.executeGenerateAccessToken(ctx, reqID, arg.UserID)
+	accessToken, err := u.executeGenerateAccessToken(ctx, arg.UserID)
 	if err != nil {
 		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
@@ -46,7 +46,7 @@ func (u *Usecase) ExecuteGenerateTokenPair(ctx context.Context, arg ExecuteGener
 		return ExecuteGenerateTokenPairOutput{}, jwtdomain.ErrInternal
 	}
 
-	refreshToken, err := u.executeGenerateRefreshToken(ctx, reqID, arg.UserID)
+	refreshToken, err := u.executeGenerateRefreshToken(ctx,arg.UserID)
 	if err != nil {
 		u.logger.PrintError(err, reqID, customerror.InternalError{
 			Inner:   err,
