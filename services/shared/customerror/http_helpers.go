@@ -30,3 +30,13 @@ func GatewayTimeoutResponse(w http.ResponseWriter, r *http.Request, message stri
 	w.WriteHeader(http.StatusGatewayTimeout)
 	render.JSON(w, r, message)
 }
+
+func ConflictResponse(w http.ResponseWriter, r *http.Request, message string) {
+	w.WriteHeader(http.StatusConflict)
+	render.JSON(w, r, message)
+}
+
+func BadRequestResponse(w http.ResponseWriter, r *http.Request, message string) {
+	w.WriteHeader(http.StatusBadRequest)
+	render.JSON(w, r, message)
+}
