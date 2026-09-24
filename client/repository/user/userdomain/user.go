@@ -3,17 +3,17 @@ package userdomain
 import (
 	"errors"
 	"time"
-	"uuid"
 
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 type User struct {
 	id           uuid.UUID `validate:"required, uuid"`
 	name         string    `validate:"required, gte=3"`
 	email        string    `validate:"required, email"`
-	passwordHash []byte    `validate:"required, len=8, alphanum"`
+	passwordHash []byte    `validate:"omitempty, len=8, alphanum"`
 	version      int32     `validate:"required, gte=1"`
 	createdAt    time.Time `validate:"required"`
 	updatedAt    time.Time `validate:"omitempty"`
