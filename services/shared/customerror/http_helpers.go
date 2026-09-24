@@ -40,3 +40,8 @@ func BadRequestResponse(w http.ResponseWriter, r *http.Request, message string) 
 	w.WriteHeader(http.StatusBadRequest)
 	render.JSON(w, r, message)
 }
+
+func UnprocessableEntityResponse(w http.ResponseWriter, r *http.Request, message string) {
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	render.JSON(w, r, message)
+}
