@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"time"
-	"uuid"
 
 	"github.com/dositadi/cheffery/client/repository/user/userdomain"
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/shared/customerror"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
