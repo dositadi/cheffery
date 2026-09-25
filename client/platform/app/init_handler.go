@@ -4,15 +4,23 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dositadi/cheffery/client/auth/authapp"
+	"github.com/dositadi/cheffery/client/auth/authhttp"
 	m "github.com/dositadi/cheffery/client/platform/middleware"
+	"github.com/dositadi/cheffery/client/repository/user/userapp"
+	"github.com/dositadi/cheffery/client/repository/user/userhttp"
+	"github.com/dositadi/cheffery/globalutil/bcrypt/bcryptapp"
 	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/chi/v5"
 )
 
 type version uint
 
 const (
 	v1 = 1
+)
+
+var (
+	baseUrl = fmt.Sprintf("/v%v/cheffery", v1)
 )
 
 func (a *App) mountHandlers() {
@@ -32,7 +40,23 @@ func (a *App) mountHandlers() {
 		BacklogTimeout: a.cfg.Server.WriteTimeout,
 	}))
 
-	a.router.Mount(fmt.Sprintf("/cheffery/v%v", v1), a.router.Group(func(r chi.Router) {
-		// Mount all domain handlers here
-	}))
+	a.mountAuth()
+	a.mountUser()
+}
+
+func (a *App) mountAuth() {
+	bcrypt := bcryptapp.New(a.logger)
+	useCase := authapp.New(a.authClient, a.repoClient, a.validate, bcrypt, a.logger)
+
+	handler := authhttp.New(a.logger, a.authClient, useCase)
+
+	a.router.Mount(baseUrl+"/auth", handler.Handler())
+}
+
+func (a *App) mountUser() {
+	usecase := userapp.New(a.logger, a.repoClient, a.validate)
+
+	handler := userhttp.New(a.logger, usecase, a.authClient)
+
+	a.router.Mount(baseUrl+"/user", handler.Handler())
 }

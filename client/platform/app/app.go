@@ -8,6 +8,7 @@ import (
 	"github.com/dositadi/cheffery/protoc_gen/protoc/repository"
 	"github.com/dositadi/cheffery/services/shared/logger"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc"
 )
 
@@ -17,6 +18,7 @@ type App struct {
 	logger     logger.Logger
 	authClient auth.IssuerClient
 	repoClient repository.RepositoryClient
+	validate   *validator.Validate
 	conns      []*grpc.ClientConn
 }
 
@@ -24,6 +26,8 @@ func New() *App {
 	app := &App{
 		logger: logger.New(os.Stdout),
 	}
+
+	app.validate = validator.New(validator.WithRequiredStructEnabled(), validator.WithPrivateFieldValidation(), validator.WithTagNameFuncBlankOmit())
 
 	app.cfg = config.LoadAppConfig(app.logger)
 	authConn := establishConn(app.logger, toAddr(app.cfg.Service.AuthHost, app.cfg.Service.AuthPort))
@@ -37,4 +41,3 @@ func New() *App {
 
 	return app
 }
-
